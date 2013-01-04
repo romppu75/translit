@@ -5,7 +5,7 @@ import java.util.*;
 
 /**
  * The TranslitDocument represents a content.
- * The main goal of this class is a parsing of specified text content and its conversion
+ * Main goal of this class is a parsing of specified text content and its conversion
  * to the internal format with certain profile.
  */
 public class TranslitDocument {
