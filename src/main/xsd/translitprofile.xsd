@@ -1,0 +1,23 @@
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+    <xs:element name="TranslitProfile">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="pair" maxOccurs="unbounded" minOccurs="0">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element type="xs:string" name="left"/>
+                            <xs:element type="xs:string" name="right"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </xs:sequence>
+            <xs:attribute type="xs:string" name="name"/>
+            <xs:attribute type="xs:string" name="version"/>
+            <xs:attribute type="xs:string" name="excludeMarkerBegin"/>
+            <xs:attribute type="xs:string" name="excludeMarkerEnd"/>
+            <xs:attribute type="xs:string" name="leftDescription"/>
+            <xs:attribute type="xs:string" name="rightDescription"/>
+            <xs:attribute type="xs:string" name="separator"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
