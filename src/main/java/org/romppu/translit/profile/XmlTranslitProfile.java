@@ -22,15 +22,15 @@ import java.util.Vector;
  * Time: 8:16
  * To change this template use File | Settings | File Templates.
  */
-public class XmlTranslitProfileImpl implements ITranslitProfile {
+public class XmlTranslitProfile implements ITranslitProfile {
 
     private TranslitProfile translitProfile;
     private String documentPath;
 
-    public XmlTranslitProfileImpl() throws Exception {
+    public XmlTranslitProfile() throws Exception {
     }
 
-    public XmlTranslitProfileImpl(String documentPath) throws JAXBException {
+    public XmlTranslitProfile(String documentPath) throws JAXBException {
         setDocumentPath(documentPath);
         load();
     }
