@@ -4,9 +4,9 @@ import java.text.MessageFormat;
 import java.util.*;
 
 /**
- * The TranslitDocument is represents a the content.
- * The main goal of this class is a parsing of a specified text content and its conversion
- * to an internal format with a certain profile.
+ * The TranslitDocument represents a content.
+ * The main goal of this class is a parsing of specified text content and its conversion
+ * to the internal format with certain profile.
  */
 public class TranslitDocument {
 
@@ -43,7 +43,7 @@ public class TranslitDocument {
     }
 
     /**
-     * Parses a specified text and creates an instance of TranslitDocument
+     * Parsing of specified text and creating a new instance of TranslitDocument
      * @param profile
      * @param text
      * @param side
@@ -122,7 +122,7 @@ public class TranslitDocument {
     }
 
     /**
-     * Getting content at specified position
+     * Getting a content at specified position
      * @param pos
      * @param side
      * @return
