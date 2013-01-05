@@ -6,6 +6,12 @@ package org.romppu.translit.document;
  */
 public interface TranslitDictionary {
 
+    /**
+     * <p>A=Z</p>
+     * <p>A on the left side</p>
+     * <p>Z on the right side</p>
+     * <p>Character A will be transliterated to Z</p>
+     */
     public enum Side {
         LEFT,
         RIGHT;
@@ -15,8 +21,18 @@ public interface TranslitDictionary {
         }
     }
 
+    /**
+     * Returns word at the specified index at the specified {@link Side}
+     * @param idx
+     * @param side
+     * @return
+     */
     public String getValueAt(int idx, Side side);
 
+    /**
+     * Returns amount of dictionary words.
+      * @return
+     */
     public int getSize();
 
     public String getExcludeMarkerBegin();
