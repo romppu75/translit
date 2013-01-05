@@ -4,86 +4,86 @@ import java.text.MessageFormat;
 import java.util.*;
 
 /**
- * The TranslitDocument represents a content.
- * Main goal of this class is a parsing of specified text content and its conversion
- * to the internal format with certain profile.
+ * The TranslitDocument represents a content. Main goal of this class is a parsing of
+ * specified text with specified dictionary and its conversion to internal format.
+ * After parsing, the content may be retrieved from document by the {@link #getString(org.romppu.translit.document.TranslitDictionary.Side)} method.
  */
 public class TranslitDocument {
 
-    public interface DecisionMaker {
-        public Match checkMatchesAndReturnMatch(ParserContext context);
-    }
-
     enum ElementType {
         INDEX,
-        SEPARATOR,
-        BLOCK_BEGIN,
-        BLOCK_END,
+        EXCLUDE_START,
+        EXCLUDE_END,
         DATA
     }
 
     private static final String ERR_INVALID_ELEMENT = "Invalid element at position {0}, type {1}";
     private static final String ERR_INVALID_DATA_RANGE = "Invalid data range ({0},{1}). Collection rowCount: {2}";
     private static final String ERR_INVALID_DATA_POS = "Invalid position ({0}). Position must be in range [{1}-{2}]";
-    private ITranslitProfile translitProfile;
+
+    private TranslitDictionary dictionary;
 
     private Vector<Element> elements = new Vector();
-    private DecisionMaker decisionMaker;
+    private MatchSelector matchSelector;
 
-    public TranslitDocument(ITranslitProfile translitProfile) {
-        this.translitProfile = translitProfile;
+    public TranslitDocument(TranslitDictionary dictionary) {
+        this.dictionary = dictionary;
     }
 
     public static TranslitDocument parse(
-            ITranslitProfile profile,
+            TranslitDictionary profile,
             String text,
-            ITranslitProfile.Side side)
+            TranslitDictionary.Side side)
             throws TranslitDocumentException {
         return parse(profile, text, side, null);
     }
 
     /**
      * Parsing of specified text and creating a new instance of TranslitDocument
+     *
      * @param profile
      * @param text
      * @param side
-     * @param decisionMaker
+     * @param matchSelector
      * @return new instance of  TranslitDocument
      * @throws TranslitDocumentException
      */
     public static TranslitDocument parse(
-            ITranslitProfile profile,
+            TranslitDictionary profile,
             String text,
-            ITranslitProfile.Side side,
-            DecisionMaker decisionMaker)
+            TranslitDictionary.Side side,
+            MatchSelector matchSelector)
             throws TranslitDocumentException {
         TranslitDocument doc = new TranslitDocument(profile);
-        doc.setDecisionMaker(decisionMaker);
-        ParserContext parserContext = doc.parse(text, side);
-        doc.elements.addAll(parserContext.elements());
+        doc.setMatchSelector(matchSelector);
+        ParsingContext parsingContext = doc.parse(text, side);
+        doc.elements.addAll(parsingContext.elements());
         return doc;
     }
 
     /**
-     * Setting {@see decisionMaker} property value
-     * @param decisionMaker
+     * Sets the {@see matchSelector} property value
+     *
+     * @param matchSelector
      */
-    private void setDecisionMaker(DecisionMaker decisionMaker) {
-        this.decisionMaker = decisionMaker;
+    private void setMatchSelector(MatchSelector matchSelector) {
+        this.matchSelector = matchSelector;
     }
 
     /**
-     * Getting {@see decisionMaker} property, if value is null then creates new instance of DefaultDecisionMaker
-     * @return decisionMaker property.
+     * Returns {@see matchSelector} property, if value is null then creates new instance of EagerMatchSelector
+     *
+     * @return matchSelector property.
      */
-    public DecisionMaker getDecisionMaker() {
-        if (decisionMaker == null)
-            decisionMaker = new DefaultDecisionMaker();
-        return decisionMaker;
+    public MatchSelector getMatchSelector() {
+        if (matchSelector == null)
+            matchSelector = new EagerMatchSelector();
+        return matchSelector;
     }
 
     /**
-     * Getting an element at specified position
+     * Returns the element at the specified position
+     *
      * @param pos
      * @return element
      * @throws TranslitDocumentException
@@ -94,23 +94,25 @@ public class TranslitDocument {
     }
 
     /**
-     * Getting a content at specified position
+     * Returns the content at the specified position in this document
+     *
      * @param pos
      * @param side
      * @return
      * @throws TranslitDocumentException
      */
-    public String getElementData(int pos, ITranslitProfile.Side side) throws TranslitDocumentException {
+    public String getElementData(int pos, TranslitDictionary.Side side) throws TranslitDocumentException {
         validatePosition(pos);
         Element e = getElement(pos);
         if (e.is(ElementType.INDEX))
-            return translitProfile.getValueAt(e.getInt(), side);
+            return dictionary.getValueAt(e.getInt(), side);
         else
             return e.getString();
     }
 
     /**
-     * Removing elements from document
+     * Removes elements from document in the specified range
+     *
      * @param start
      * @param end
      * @throws TranslitDocumentException
@@ -123,53 +125,52 @@ public class TranslitDocument {
     }
 
     /**
-     * Removing all elements
+     * Removes all elements
      */
     public void clear() {
         elements.removeAllElements();
     }
 
     /**
-     * Getting current document as string in specified format (side)
+     * Returns document content as string
+     *
      * @param side
      * @return
      * @throws TranslitDocumentException
      */
-    public String getString(ITranslitProfile.Side side) throws TranslitDocumentException {
+    public String getString(TranslitDictionary.Side side) throws TranslitDocumentException {
         return buildString(0, elements.size(), false, side);
     }
 
     /**
-     * Getting translitProfile property
-     * @return
+     * Returns the dictionary property
+     *
+     * @return dictionary
      */
-    public ITranslitProfile getProfile() {
-        return translitProfile;
+    public TranslitDictionary getDictionary() {
+        return dictionary;
     }
 
-    private String buildString(List<Element> list, boolean showBlocks, ITranslitProfile.Side side) throws TranslitDocumentException {
-        boolean blockFlag = false;
+    private String buildString(List<Element> list, boolean showBlocks, TranslitDictionary.Side side) throws TranslitDocumentException {
+        boolean inExclusionBlock = false;
         StringBuffer buf = new StringBuffer();
         int pos = 0;
-        for (Iterator<Element> i = list.iterator(); i.hasNext();) {
+        for (Iterator<Element> i = list.iterator(); i.hasNext(); ) {
             Element e = i.next();
             switch (e.getType()) {
                 case INDEX:
-                    buf.append(translitProfile.getValueAt(e.getInt(), decideDataType(side, blockFlag)));
+                    buf.append(dictionary.getValueAt(e.getInt(), inExclusionBlock?side.invert():side));
                     break;
                 case DATA:
                     buf.append(e.getString());
                     break;
-                case SEPARATOR:
-                    if (showBlocks) buf.append(e.getProfile().getSeparator());
+                case EXCLUDE_START:
+                    if (showBlocks) buf.append(e.getDictionary().getExcludeMarkerBegin());
+                    inExclusionBlock = true;
                     break;
-                case BLOCK_BEGIN:
-                    if (showBlocks) buf.append(e.getProfile().getExcludeMarkerBegin());
-                    blockFlag = true;
-                    break;
-                case BLOCK_END:
-                    if (showBlocks) buf.append(e.getProfile().getExcludeMarkerEnd());
-                    blockFlag = false;
+                case EXCLUDE_END:
+                    if (showBlocks) buf.append(e.getDictionary().getExcludeMarkerEnd());
+                    inExclusionBlock = false;
                     break;
                 default:
                     throw new TranslitDocumentException(MessageFormat.format(ERR_INVALID_ELEMENT,
@@ -180,30 +181,25 @@ public class TranslitDocument {
         return buf.toString();
     }
 
-    private ITranslitProfile.Side decideDataType(ITranslitProfile.Side side, boolean blockFlag) {
-        if (!blockFlag) return side;
-        return side.invert();
-    }
-
-    protected String buildString(int start, int end, boolean blocks, ITranslitProfile.Side side) throws TranslitDocumentException {
+    protected String buildString(int start, int end, boolean blocks, TranslitDictionary.Side side) throws TranslitDocumentException {
         validateElementsRange(start, end);
         return buildString(elements.subList(start, end), blocks, side);
     }
 
-    private ParserContext parse(String text, ITranslitProfile.Side side) {
-        ParserContext context = new ParserContext(text, side);
+    private ParsingContext parse(String text, TranslitDictionary.Side side) {
+        ParsingContext context = new ParsingContext(text, side);
         while (context.position < text.length()) {
             SortedSet matchSet = createSortedIndexSet();
             String part = text.substring(context.position, text.length());
-            for (int i = 0; i < translitProfile.getSize(); i++) {
-                String data = translitProfile.getValueAt(i, side);
+            for (int i = 0; i < dictionary.getSize(); i++) {
+                String data = dictionary.getValueAt(i, side);
                 if (part.startsWith(data)) {
                     matchSet.add(new Match(i, data));
                 }
             }
             if (!matchSet.isEmpty()) {
                 context.matchesVector.add(matchSet);
-                Match decidedMatch = getDecisionMaker().checkMatchesAndReturnMatch(context);
+                Match decidedMatch = getMatchSelector().selectMatch(context);
                 context.position += decidedMatch.length();
                 context.elements.add(new Element(decidedMatch.index()));
             } else {
@@ -235,7 +231,7 @@ public class TranslitDocument {
         }));
     }
 
-    class Match {
+    public class Match {
         private int index;
         private String stringPart;
 
@@ -257,14 +253,14 @@ public class TranslitDocument {
         }
     }
 
-    class ParserContext {
-        private ITranslitProfile.Side side;
+    public class ParsingContext {
+        private TranslitDictionary.Side side;
         private String text;
         private Vector elements = new Vector();
         private int position;
         private Vector<SortedSet<Match>> matchesVector = new Vector();
 
-        private ParserContext(String text, ITranslitProfile.Side side) {
+        private ParsingContext(String text, TranslitDictionary.Side side) {
             this.side = side;
             this.text = text;
         }
@@ -273,15 +269,15 @@ public class TranslitDocument {
             return TranslitDocument.this;
         }
 
-        public ITranslitProfile getProfile() {
-            return TranslitDocument.this.translitProfile;
+        public TranslitDictionary getDictionary() {
+            return TranslitDocument.this.dictionary;
         }
 
         public int getPosition() {
             return position;
         }
 
-        public ITranslitProfile.Side getSide() {
+        public TranslitDictionary.Side getSide() {
             return side;
         }
 
@@ -308,12 +304,10 @@ public class TranslitDocument {
 
         public Element(char data) {
             this.value = data;
-            if (translitProfile.getSeparator().charAt(0) == data)
-                this.type = ElementType.SEPARATOR;
-            else if (translitProfile.getExcludeMarkerBegin().charAt(0) == data)
-                this.type = ElementType.BLOCK_BEGIN;
-            else if (translitProfile.getExcludeMarkerEnd().charAt(0) == data)
-                this.type = ElementType.BLOCK_END;
+            if (dictionary.getExcludeMarkerBegin().charAt(0) == data)
+                this.type = ElementType.EXCLUDE_START;
+            else if (dictionary.getExcludeMarkerEnd().charAt(0) == data)
+                this.type = ElementType.EXCLUDE_END;
             else
                 this.type = ElementType.DATA;
         }
@@ -357,8 +351,8 @@ public class TranslitDocument {
             return TranslitDocument.this;
         }
 
-        public ITranslitProfile getProfile() {
-            return TranslitDocument.this.translitProfile;
+        public TranslitDictionary getDictionary() {
+            return TranslitDocument.this.dictionary;
         }
     }
 

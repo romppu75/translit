@@ -1,7 +1,7 @@
 package org.romppu.translit.profile;
 
 
-import org.romppu.translit.document.ITranslitProfile;
+import org.romppu.translit.document.TranslitDictionary;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -16,31 +16,48 @@ import java.nio.charset.Charset;
 import java.util.Vector;
 
 /**
- *
+ * Main goal of <code>XmlTranslitDictionary</code> is an implementing of {@link org.romppu.translit.document.TranslitDictionary}
+ * interface which is used by {@link org.romppu.translit.document.TranslitDocument}
+ * The XmlTranslitDictionary deals with xml file which is represented by {@link TranslitProfile}
  */
-public class XmlTranslitProfile implements ITranslitProfile {
+public class XmlTranslitDictionary implements TranslitDictionary {
 
     private TranslitProfile translitProfile;
     private String documentPath;
 
-    public XmlTranslitProfile() throws Exception {
+    public XmlTranslitDictionary() throws Exception {
     }
 
-    public XmlTranslitProfile(String documentPath) throws JAXBException {
+    /**
+     * Constructs new instance of XmlTranslitDictionary with the specified {@see documentPath} and
+     * invokes {@link #load()}
+     * @param documentPath
+     * @throws JAXBException
+     */
+    public XmlTranslitDictionary(String documentPath) throws JAXBException {
         setDocumentPath(documentPath);
         load();
     }
 
+    /**
+     * Returns {@see documentPath} property value.
+     * The {@see documentPath} property preserve value of path to xml file.
+     * @return {@see documentPath} property value
+     */
     public String getDocumentPath() {
         return documentPath;
     }
 
+    /**
+     * Sets value of {@see documentPath} property
+     * @param documentPath
+     */
     public void setDocumentPath(String documentPath) {
         this.documentPath = documentPath;
     }
 
     /**
-     * Loading profile from xml file
+     * Loads dictionary data from xml file
      * @throws Exception
      */
     public void load() throws JAXBException {
@@ -52,7 +69,7 @@ public class XmlTranslitProfile implements ITranslitProfile {
     }
 
     /**
-     * Saving profile to xml file
+     * Saves dictionary data to xml file
      * @throws IOException
      * @throws TransformerException
      */
@@ -65,7 +82,7 @@ public class XmlTranslitProfile implements ITranslitProfile {
     }
 
     /**
-     * Finding pairs on defined <code>side</code> by specified <code>value</code>
+     * Finds pairs on the specified <code>side</code> by the specified <code>value</code>
      * @param side
      * @param value
      * @return
@@ -82,6 +99,12 @@ public class XmlTranslitProfile implements ITranslitProfile {
         return toReturn;
     }
 
+    /**
+     * Returns value at the specified position from the specified side
+     * @param idx
+     * @param side
+     * @return
+     */
     public String getValueAt(int idx, Side side) {
         TranslitProfile.Pair pair = translitProfile.getPair().get(idx);
         return side == Side.LEFT ? pair.getLeft() : pair.getRight();
@@ -95,7 +118,7 @@ public class XmlTranslitProfile implements ITranslitProfile {
     }
 
     /**
-     * Adding new pair to profile
+     * Adds new pair to profile
      * @param left
      * @param right
      */
@@ -108,8 +131,9 @@ public class XmlTranslitProfile implements ITranslitProfile {
 
     /**
      * Wrapper for {@link org.romppu.translit.profile.TranslitProfile#getExcludeMarkerBegin()}
-     * @return
+     * @return {@link TranslitProfile#excludeMarkerBegin} property value
      */
+    @Override
     public String getExcludeMarkerBegin() {
         return translitProfile.getExcludeMarkerBegin();
     }
@@ -124,8 +148,9 @@ public class XmlTranslitProfile implements ITranslitProfile {
 
     /**
      * Wrapper for {@link org.romppu.translit.profile.TranslitProfile#getExcludeMarkerEnd()}
-     * @return
+     * @return {@link TranslitProfile#excludeMarkerEnd} property value
      */
+    @Override
     public String getExcludeMarkerEnd() {
         return translitProfile.getExcludeMarkerEnd();
     }
@@ -139,7 +164,7 @@ public class XmlTranslitProfile implements ITranslitProfile {
     }
     /**
      * Wrapper of {@link org.romppu.translit.profile.TranslitProfile#getVersion()}
-     * @return
+     * @return {@link org.romppu.translit.profile.TranslitProfile#version} property value
      */
     public String getVersion() {
         if (translitProfile == null) return null;
@@ -153,22 +178,6 @@ public class XmlTranslitProfile implements ITranslitProfile {
      */
     public void setVersion(String newValue) {
         translitProfile.setVersion(newValue);
-    }
-
-    /**
-     * Wrapper of {@link org.romppu.translit.profile.TranslitProfile#getSeparator()}
-     * @return
-     */
-    public String getSeparator() {
-        return translitProfile.getSeparator();
-    }
-
-    /**
-     * Wrapper of {@link TranslitProfile#setSeparator(String)}
-     * @param separator
-     */
-    public void setSeparator(String separator) {
-        translitProfile.setSeparator(separator);
     }
 
 }

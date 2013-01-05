@@ -1,11 +1,7 @@
 package org.romppu.translit.document;
 
 /**
- * Created by IntelliJ IDEA.
- * User: roman
- * Date: 26.10.2011
- * Time: 13:17
- * To change this template use File | Settings | File Templates.
+ * This exception is designed for use by the {@link TranslitDocument}
  */
 public class TranslitDocumentException extends Exception {
     public TranslitDocumentException(String params) {

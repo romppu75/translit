@@ -1,11 +1,10 @@
 package org.romppu.translit.document;
 
 /**
- * User: roman
- * Date: 4.1.2013
- * Time: 15:18
+ * The TranslitDictionary interface is represents a dictionary for transliteration,
+ * it defines some useful methods which are providing access to data of dictionary.
  */
-public interface ITranslitProfile {
+public interface TranslitDictionary {
 
     public enum Side {
         LEFT,
@@ -23,6 +22,4 @@ public interface ITranslitProfile {
     public String getExcludeMarkerBegin();
 
     public String getExcludeMarkerEnd();
-
-    public String getSeparator();
 }
