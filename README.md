@@ -2,9 +2,9 @@ translit
 =========
 Using example:
 <pre>
-XmlTranslitProfile profile = new XmlTranslitProfile("cyrillic_default.xml");
-TranslitDocument document = TranslitDocument.parse(profile, "SCH'i da kasha - pisch'a nasha!", ITranslitProfile.Side.RIGHT);
-System.out.println(document.getString(ITranslitProfile.Side.LEFT));
+XmlTranslitDictionary dictionary = new XmlTranslitDictionary("cyrillic_default.xml");
+TranslitDocument document = TranslitDocument.parse(dictionary, "SCH'i da kasha - pisch'a nasha!", TranslitDictionary.Side.RIGHT);
+System.out.println(document.getString(TranslitDictionary.Side.LEFT));
 </pre>
 Output:
 <pre>
