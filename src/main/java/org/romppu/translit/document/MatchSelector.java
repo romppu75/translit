@@ -1,9 +1,9 @@
 package org.romppu.translit.document;
 
 /**
- * This interface is used by the {@link TranslitDocument}
- * in the  parsing phase to decide what match will be actually used when
- * more than one matches was found in the {@link TranslitDictionary}.
+* This interface is used by the {@link TranslitDocument}
+* in the  parsing phase to decide what match will be actually used when
+* many matches will be found in the {@link TranslitDictionary}.
  */
 public interface MatchSelector {
 
