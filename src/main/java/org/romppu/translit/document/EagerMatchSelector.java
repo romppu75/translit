@@ -8,7 +8,7 @@ import java.util.Iterator;
 public class EagerMatchSelector implements MatchSelector {
 
     /**
-     * Selects longest match from specified parsing context.
+     * Selects the longest match from specified parsing context.
      * @param context
      * @return
      */
