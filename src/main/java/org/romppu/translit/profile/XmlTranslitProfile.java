@@ -16,11 +16,7 @@ import java.nio.charset.Charset;
 import java.util.Vector;
 
 /**
- * Created by IntelliJ IDEA.
- * User: roman
- * Date: 26.10.2011
- * Time: 8:16
- * To change this template use File | Settings | File Templates.
+ *
  */
 public class XmlTranslitProfile implements ITranslitProfile {
 

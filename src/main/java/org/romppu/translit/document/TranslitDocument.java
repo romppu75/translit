@@ -83,34 +83,6 @@ public class TranslitDocument {
     }
 
     /**
-     * todo test test test
-     * Inserts the specified text at the specified position
-     * @param pos
-     * @param text string value which must be inserted
-     * @param side format of new element
-     * @return
-     * @throws TranslitDocumentException
-     */
-    public String insertAt(int pos, String text, ITranslitProfile.Side side) throws TranslitDocumentException {
-        StringBuffer parseBuf = new StringBuffer();
-        Vector<Element> elementsToRemove = new Vector();
-        int len = 0;
-        int p = pos - 1;
-        parseBuf.insert(0, text);
-        while (p > -1 && len < 4) {
-            String elemData = getElementData(p, side);
-            parseBuf.insert(0, elemData);
-            len += elemData.length();
-            elementsToRemove.add(elements.get(p));
-            p--;
-        }
-        List<Element> newElements = parse(parseBuf.toString(), side).elements();
-        elements.removeAll(elementsToRemove);
-        elements.addAll(p + 1, newElements);
-        return buildString(newElements, false, side.invert());
-    }
-
-    /**
      * Getting an element at specified position
      * @param pos
      * @return element
