@@ -11,8 +11,8 @@ public class TestTranslit {
 
     public static void main(String... params) {
         try {
-            XmlTranslitDictionary profile = new XmlTranslitDictionary("cyrillic_default.xml");
-            TranslitDocument document = TranslitDocument.parse(profile, "SCH'i da kasha - pisch'a nasha!", TranslitDictionary.Side.RIGHT);
+            XmlTranslitDictionary dictionary = new XmlTranslitDictionary("cyrillic_default.xml");
+            TranslitDocument document = TranslitDocument.parse(dictionary, "SCH'i da kasha - pisch'a nasha!", TranslitDictionary.Side.RIGHT);
             System.out.println(document.getString(TranslitDictionary.Side.LEFT));
         } catch (Exception e) {
             e.printStackTrace();

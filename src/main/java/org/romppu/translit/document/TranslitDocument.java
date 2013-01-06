@@ -39,9 +39,10 @@ public class TranslitDocument {
     }
 
     /**
-     * Parsing of specified text and creating a new instance of TranslitDocument
+     * Parses of the specified {@see text} with the specified {@see dictionary}
+     * and creating a new instance of TranslitDocument
      *
-     * @param profile
+     * @param dict
      * @param text
      * @param side
      * @param matchSelector
@@ -49,12 +50,12 @@ public class TranslitDocument {
      * @throws TranslitDocumentException
      */
     public static TranslitDocument parse(
-            TranslitDictionary profile,
+            TranslitDictionary dict,
             String text,
             TranslitDictionary.Side side,
             MatchSelector matchSelector)
             throws TranslitDocumentException {
-        TranslitDocument doc = new TranslitDocument(profile);
+        TranslitDocument doc = new TranslitDocument(dict);
         doc.setMatchSelector(matchSelector);
         ParsingContext parsingContext = doc.parse(text, side);
         doc.elements.addAll(parsingContext.elements());
