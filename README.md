@@ -1,4 +1,4 @@
-translit
+translit 1.2
 =========
 Using example:
 <pre>
