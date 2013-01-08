@@ -1,7 +1,7 @@
 package org.romppu.translit.document;
 
 /**
- * The TranslitDictionary interface is represents a dictionary for transliteration,
+ * The TranslitDictionary interface is representing a dictionary for transliteration,
  * it defines some useful methods which are providing access to data of dictionary.
  */
 public interface TranslitDictionary {
