@@ -14,7 +14,11 @@ public class TestTranslit {
             XmlTranslitDictionary dictionary = new XmlTranslitDictionary("cyrillic_default.xml");
             TranslitDocument document = TranslitDocument.parse(dictionary, "SCH'i da kasha - pisch'a nasha!", TranslitDictionary.Side.RIGHT);
             System.out.println(document.getString(TranslitDictionary.Side.LEFT));
-            System.out.println(document.getString(TranslitDictionary.Side.RIGHT));
+            String newString = "(jut' adskaya!)";
+            int insertionIndex = document.convertToElementIndex(15, TranslitDictionary.Side.RIGHT);
+            System.out.println("Inserting " + newString + " at " + insertionIndex);
+            document.insertAt(insertionIndex, newString, TranslitDictionary.Side.RIGHT);
+            System.out.println(document.getString(TranslitDictionary.Side.LEFT));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -5,12 +5,11 @@ import java.util.*;
 
 /**
  * The TranslitDocument represents a content. Main goal of this class is a parsing of
- * specified text with specified dictionary and its conversion to internal format.
- * After parsing, the content may be retrieved from document by the {@link #getString(TranslitDictionary.Side)} method.
+ * a specified text with a specified dictionary and its conversion to an internal format of the TranslitDocument.
+ * After parsing, the content may be retrieved from the TranslitDocument by the {@link #getString(TranslitDictionary.Side)} method.
  */
 public class TranslitDocument {
 
-    private static final String ERR_INVALID_ELEMENT = "Invalid element at position {0}, type {1}";
     private static final String ERR_INVALID_DATA_RANGE = "Invalid data range ({0},{1}). Collection rowCount: {2}";
     private static final String ERR_INVALID_DATA_POS = "Invalid position ({0}). Position must be in range [{1}-{2}]";
 
@@ -19,27 +18,39 @@ public class TranslitDocument {
     private Vector<Element> elements = new Vector();
     private MatchSelectionStrategy matchSelectionStrategy;
 
+    /**
+     * Creates new instance of TranslitDocument with the specified {@see dictionary}
+     * @param dictionary translit dictionary
+     */
     public TranslitDocument(TranslitDictionary dictionary) {
         this.dictionary = dictionary;
     }
 
+    /**
+     * Parses the specified text with specified parameters
+     * @param dict TranslitDictionary
+     * @param text to parse
+     * @param side text will be transliterated from the specified side into an opposite side
+     * @return new instance of TranslitDocument
+     * @throws TranslitDocumentException
+     */
     public static TranslitDocument parse(
-            TranslitDictionary profile,
+            TranslitDictionary dict,
             String text,
             TranslitDictionary.Side side)
             throws TranslitDocumentException {
-        return parse(profile, text, side, null);
+        return parse(dict, text, side, null);
     }
 
     /**
      * Parses of the specified {@see text} with the specified {@see dictionary}
      * and creating a new instance of TranslitDocument
      *
-     * @param dict
-     * @param text
-     * @param side
-     * @param matchSelectionStrategy
-     * @return new instance of  TranslitDocument
+     * @param dict TranslitDictionary
+     * @param text to parse
+     * @param text will be transliterated from the specified side into an opposite side
+     * @param matchSelectionStrategy selection strategy
+     * @return new instance of TranslitDocument
      * @throws TranslitDocumentException
      */
     public static TranslitDocument parse(
@@ -78,7 +89,7 @@ public class TranslitDocument {
     /**
      * Returns the element at the specified position
      *
-     * @param pos
+     * @param pos element position
      * @return element
      * @throws TranslitDocumentException
      */
@@ -90,28 +101,14 @@ public class TranslitDocument {
     /**
      * Returns the content at the specified position in this document
      *
-     * @param pos
-     * @param side
-     * @return
+     * @param pos element position
+     * @param side in dictionary (left or right)
+     * @return String content of element
      * @throws TranslitDocumentException
      */
     public String getElementData(int pos, TranslitDictionary.Side side) throws TranslitDocumentException {
         validatePosition(pos);
         return getElement(pos).buildValue(new BuildingContext(true, side));
-    }
-
-    /**
-     * Removes elements from document in the specified range
-     *
-     * @param start
-     * @param end
-     * @throws TranslitDocumentException
-     */
-    public void remove(int start, int end) throws TranslitDocumentException {
-        validateElementsRange(start, end);
-        Vector<Element> elementsToRemove = new Vector();
-        for (int i = start; i < end; i++) elementsToRemove.add(elements.get(i));
-        elements.removeAll(elementsToRemove);
     }
 
     /**
@@ -124,8 +121,8 @@ public class TranslitDocument {
     /**
      * Returns document content as string
      *
-     * @param side
-     * @return
+     * @param side text will be transliterated from the specified side into an opposite side
+     * @return transliterated text
      * @throws TranslitDocumentException
      */
     public String getString(TranslitDictionary.Side side) throws TranslitDocumentException {
@@ -133,38 +130,63 @@ public class TranslitDocument {
     }
 
     /**
-     * Inserts the specified {@see string} at the specified {@see position} of the document. The {@see string} will be parsed with the specified {@see side}
-     * The {@see position} means an element position, it is not position in text content.
-     * todo test. Improve parsing. maxBack constant must be removed.
-     *
-     * @param position
-     * @param string
-     * @param side
+     * Inserts the specified {@see text} at the specified {@see index} of the document's elements.
+     * The {@see text} will be transliterated from the specified {@see side} into an opposite side.
+     * The {@see index} means an element index, it is not index in a text content. To retrieve the element index by position in the content use {@link #convertToElementIndex(int, org.romppu.translit.TranslitDictionary.Side)} method
+     * @param index element index
+     * @param text to insert
+     * @param side text will be transliterated from the specified side into an opposite side
      * @throws TranslitDocumentException
      */
-    public void insertAt(int position, String string, TranslitDictionary.Side side) throws TranslitDocumentException {
-        if (elements.size() == 0
-                || position == 0
-                || !(elements.get(position - 1 == 0 ? 0 : position - 1) instanceof IndexElement)) {
-            ParsingContext context = parse(string, side);
-            elements.addAll(position, context.elements());
-        } else {
-            int startIndex = position;
-            int maxBack = 4;
-            while (position - startIndex != maxBack
-                    && startIndex - 1 != -1
+    public void insertAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
+        /*if (elements.size() == 0
+                || index == 0
+                || !(elements.get(index - 1 == 0 ? 0 : index - 1) instanceof IndexElement)) {
+            ParsingContext context = parse(text, side);
+            elements.addAll(index, context.elements());
+        } else {*/
+            int longestWord = getDictionary().getLongestWordLen(side);
+
+            int startIndex = index;
+            while (index - startIndex != longestWord
+                    && startIndex - 1 > -1
                     && (elements.get(startIndex - 1) instanceof IndexElement)) startIndex--;
-            String prevString = buildString(startIndex, position, false, side);
-            removeElements(startIndex, position - startIndex);
-            ParsingContext context = parse(prevString + string, side);
+
+            int endIndex = index;
+            while (endIndex - index != longestWord
+                && endIndex + 1 < elements.size()
+                && (elements.get(endIndex + 1) instanceof IndexElement)) endIndex++;
+
+            String prevString = buildString(startIndex, index, false, side);
+            String nextString = buildString(index, endIndex, false, side);
+            removeElements(startIndex, endIndex - startIndex);
+            ParsingContext context = parse(prevString + text + nextString, side);
             elements.addAll(startIndex, context.elements());
+        //}
+    }
+
+    /**
+     * Converts the specified position to the element index with the specified side
+     * @param position position in string
+     * @param side LEFT or RIGHT
+     * @return element index
+     */
+    public int convertToElementIndex(int position, TranslitDictionary.Side side) {
+        int currentPosition = 0;
+        BuildingContext buildingContext = new BuildingContext(true, side);
+        for (int i = 0; i < elements.size(); i++) {
+            Element element = elements.get(i);
+            String elementValue = element.buildValue(buildingContext);
+            currentPosition += elementValue.length();
+            if (currentPosition >= position) return i;
         }
+        return -1;
     }
 
     /**
      * Removes the specified {@see amount} of elements from the specified {@see position} of the document.
-     * @param position
-     * @param amount
+     * @param position removes from
+     * @param amount elements amount
      */
     public void removeElements(int position, int amount) {
         Vector<Element> toRemove = new Vector<Element>();

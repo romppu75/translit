@@ -13,6 +13,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Vector;
 
 /**
@@ -24,8 +26,11 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     private TranslitProfile translitProfile;
     private String documentPath;
+    private Map<Side, Integer> longestWordLen = new Hashtable<Side, Integer>();
 
-    public XmlTranslitDictionary() throws Exception {
+    public XmlTranslitDictionary()  {
+        longestWordLen.put(Side.LEFT, 0);
+        longestWordLen.put(Side.RIGHT, 0);
     }
 
     /**
@@ -36,6 +41,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      * @throws JAXBException
      */
     public XmlTranslitDictionary(String documentPath) throws JAXBException {
+        this();
         setDocumentPath(documentPath);
         load();
     }
@@ -69,6 +75,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
         Unmarshaller u = jc.createUnmarshaller();
         translitProfile = (TranslitProfile) u.unmarshal(new File(getDocumentPath()));
+        updateLongestWordLen();
         System.out.println("Profile version is " + translitProfile.getVersion() + ", done.");
     }
 
@@ -126,6 +133,11 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         return translitProfile.getPair().size();
     }
 
+    @Override
+    public int getLongestWordLen(Side side) {
+        return longestWordLen.get(side);
+    }
+
     /**
      * Adds new pair to profile
      *
@@ -137,6 +149,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         pair.setLeft(left);
         pair.setRight(right);
         translitProfile.getPair().add(pair);
+        updateLongestWordLen();
     }
 
     /**
@@ -195,6 +208,15 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      */
     public void setVersion(String newValue) {
         translitProfile.setVersion(newValue);
+    }
+
+    private void updateLongestWordLen() {
+        for (TranslitProfile.Pair pair: translitProfile.getPair()) {
+            if (pair.getLeft().length() > longestWordLen.get(Side.LEFT))
+                longestWordLen.put(Side.LEFT, pair.getLeft().length());
+            if (pair.getRight().length() > longestWordLen.get(Side.RIGHT))
+                longestWordLen.put(Side.RIGHT, pair.getRight().length());
+        }
     }
 
 }

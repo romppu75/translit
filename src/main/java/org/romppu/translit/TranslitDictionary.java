@@ -2,7 +2,7 @@ package org.romppu.translit;
 
 /**
  * The TranslitDictionary interface is representing a dictionary for transliteration,
- * it defines some useful methods which are providing access to data of dictionary.
+ * it defines some useful methods which are providing access to data of the dictionary.
  */
 public interface TranslitDictionary {
 
@@ -34,6 +34,8 @@ public interface TranslitDictionary {
       * @return
      */
     public int getSize();
+
+    public int getLongestWordLen(Side side);
 
     public String getExcludeMarkerBegin();
 
