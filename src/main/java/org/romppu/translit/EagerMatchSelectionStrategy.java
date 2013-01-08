@@ -1,14 +1,14 @@
-package org.romppu.translit.document;
+package org.romppu.translit;
 
 import java.util.Iterator;
 
 /**
- * Default implementation of {@link MatchSelector}
+ * Default implementation of {@link MatchSelectionStrategy}
  */
-public class EagerMatchSelector implements MatchSelector {
+public class EagerMatchSelectionStrategy implements MatchSelectionStrategy {
 
     /**
-     * Selects the longest match from specified parsing context.
+     * Selects the longest match from the specified parsing context.
      * @param context
      * @return
      */

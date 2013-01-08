@@ -1,6 +1,6 @@
-import org.romppu.translit.document.TranslitDictionary;
-import org.romppu.translit.document.TranslitDocument;
-import org.romppu.translit.profile.XmlTranslitDictionary;
+import org.romppu.translit.TranslitDictionary;
+import org.romppu.translit.TranslitDocument;
+import org.romppu.translit.XmlTranslitDictionary;
 
 /**
  * User: roman
@@ -14,6 +14,7 @@ public class TestTranslit {
             XmlTranslitDictionary dictionary = new XmlTranslitDictionary("cyrillic_default.xml");
             TranslitDocument document = TranslitDocument.parse(dictionary, "SCH'i da kasha - pisch'a nasha!", TranslitDictionary.Side.RIGHT);
             System.out.println(document.getString(TranslitDictionary.Side.LEFT));
+            System.out.println(document.getString(TranslitDictionary.Side.RIGHT));
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -1,11 +1,11 @@
-package org.romppu.translit.document;
+package org.romppu.translit;
 
 /**
 * This interface is used by the {@link TranslitDocument}
 * in the  parsing phase to decide what match will be actually used when
 * many matches will be found in the {@link TranslitDictionary}.
  */
-public interface MatchSelector {
+public interface MatchSelectionStrategy {
 
     /**
      * Selects and returns appropriate match from the specified parsing context.

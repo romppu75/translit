@@ -1,7 +1,7 @@
-package org.romppu.translit.profile;
+package org.romppu.translit;
 
 
-import org.romppu.translit.document.TranslitDictionary;
+import org.romppu.translit.profile.TranslitProfile;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -16,9 +16,9 @@ import java.nio.charset.Charset;
 import java.util.Vector;
 
 /**
- * Main goal of <code>XmlTranslitDictionary</code> is an implementing of {@link org.romppu.translit.document.TranslitDictionary}
- * interface which is used by {@link org.romppu.translit.document.TranslitDocument}
- * The XmlTranslitDictionary deals with xml file which is represented by {@link TranslitProfile}
+ * Main goal of <code>XmlTranslitDictionary</code> is an implementing of {@link TranslitDictionary}
+ * interface which is used by {@link TranslitDocument}
+ * The XmlTranslitDictionary deals with xml file which is represented by {@link org.romppu.translit.profile.TranslitProfile}
  */
 public class XmlTranslitDictionary implements TranslitDictionary {
 
@@ -31,6 +31,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
     /**
      * Constructs new instance of XmlTranslitDictionary with the specified {@see documentPath} and
      * invokes {@link #load()}
+     *
      * @param documentPath
      * @throws JAXBException
      */
@@ -42,6 +43,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
     /**
      * Returns {@see documentPath} property value.
      * The {@see documentPath} property preserve value of path to xml file.
+     *
      * @return {@see documentPath} property value
      */
     public String getDocumentPath() {
@@ -50,6 +52,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Sets value of {@see documentPath} property
+     *
      * @param documentPath
      */
     public void setDocumentPath(String documentPath) {
@@ -58,38 +61,41 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Loads dictionary data from xml file
+     *
      * @throws Exception
      */
     public void load() throws JAXBException {
         System.out.println("Loading profile from " + getDocumentPath());
-        JAXBContext jc = JAXBContext.newInstance( getClass().getPackage().getName() );
+        JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
         Unmarshaller u = jc.createUnmarshaller();
-        translitProfile = (TranslitProfile)u.unmarshal( new File(getDocumentPath()) );
+        translitProfile = (TranslitProfile) u.unmarshal(new File(getDocumentPath()));
         System.out.println("Profile version is " + translitProfile.getVersion() + ", done.");
     }
 
     /**
      * Saves dictionary data to xml file
+     *
      * @throws IOException
      * @throws TransformerException
      */
     public void save() throws IOException, TransformerException, JAXBException {
         System.out.println("Saving profile to " + getDocumentPath());
-        JAXBContext jc = JAXBContext.newInstance(getClass().getPackage().getName());
+        JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
         Marshaller m = jc.createMarshaller();
         FileOutputStream os = new FileOutputStream(getDocumentPath());
-        m.marshal( translitProfile, new OutputStreamWriter( os, Charset.forName("UTF8")));
+        m.marshal(translitProfile, new OutputStreamWriter(os, Charset.forName("UTF8")));
     }
 
     /**
      * Finds pairs on the specified <code>side</code> by the specified <code>value</code>
+     *
      * @param side
      * @param value
      * @return
      */
     public Vector<TranslitProfile.Pair> findOpposites(String value, Side side) {
         Vector<TranslitProfile.Pair> toReturn = new Vector<TranslitProfile.Pair>();
-        for (TranslitProfile.Pair pair: translitProfile.getPair()) {
+        for (TranslitProfile.Pair pair : translitProfile.getPair()) {
             if (side == Side.LEFT && value.equals(pair.getLeft())) {
                 toReturn.add(pair);
             } else if (side == Side.RIGHT && value.equals(pair.getRight())) {
@@ -101,6 +107,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Returns value at the specified position from the specified side
+     *
      * @param idx
      * @param side
      * @return
@@ -109,8 +116,10 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         TranslitProfile.Pair pair = translitProfile.getPair().get(idx);
         return side == Side.LEFT ? pair.getLeft() : pair.getRight();
     }
+
     /**
      * Returns number of pairs
+     *
      * @return number of pairs
      */
     public int getSize() {
@@ -119,6 +128,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Adds new pair to profile
+     *
      * @param left
      * @param right
      */
@@ -131,6 +141,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Wrapper for {@link org.romppu.translit.profile.TranslitProfile#getExcludeMarkerBegin()}
+     *
      * @return {@link TranslitProfile#excludeMarkerBegin} property value
      */
     @Override
@@ -140,6 +151,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Wrapper of {@link TranslitProfile#setExcludeMarkerBegin(String)}
+     *
      * @param newValue
      */
     public void setExcludeMarkerBegin(String newValue) {
@@ -148,6 +160,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Wrapper for {@link org.romppu.translit.profile.TranslitProfile#getExcludeMarkerEnd()}
+     *
      * @return {@link TranslitProfile#excludeMarkerEnd} property value
      */
     @Override
@@ -157,13 +170,16 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Wrapper of {@link TranslitProfile#setExcludeMarkerEnd(String)}
+     *
      * @param newValue
      */
     public void setExcludeMarkerEnd(String newValue) {
         translitProfile.setExcludeMarkerEnd(newValue);
     }
+
     /**
      * Wrapper of {@link org.romppu.translit.profile.TranslitProfile#getVersion()}
+     *
      * @return {@link org.romppu.translit.profile.TranslitProfile#version} property value
      */
     public String getVersion() {
@@ -174,6 +190,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
 
     /**
      * Wrapper of {@link TranslitProfile#setVersion(String)}
+     *
      * @param newValue
      */
     public void setVersion(String newValue) {
