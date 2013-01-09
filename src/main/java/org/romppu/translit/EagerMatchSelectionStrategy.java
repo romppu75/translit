@@ -4,6 +4,7 @@ import java.util.Iterator;
 
 /**
  * Default implementation of {@link MatchSelectionStrategy}
+ * The EagerMatchSelectionStrategy selects the longest match.
  */
 public class EagerMatchSelectionStrategy implements MatchSelectionStrategy {
 

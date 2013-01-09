@@ -22,7 +22,7 @@ public interface TranslitDictionary {
     }
 
     /**
-     * Returns word at the specified index at the specified {@link Side}
+     * Returns word at the specified index from the specified {@link Side}
      * @param idx
      * @param side
      * @return

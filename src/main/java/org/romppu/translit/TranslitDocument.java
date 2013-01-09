@@ -19,7 +19,8 @@ public class TranslitDocument {
     private MatchSelectionStrategy matchSelectionStrategy;
 
     /**
-     * Creates new instance of TranslitDocument with the specified {@see dictionary}
+     * Creates a new instance of TranslitDocument with the specified {@see dictionary}
+     *
      * @param dictionary translit dictionary
      */
     public TranslitDocument(TranslitDictionary dictionary) {
@@ -27,40 +28,42 @@ public class TranslitDocument {
     }
 
     /**
-     * Parses the specified text with specified parameters
-     * @param dict TranslitDictionary
-     * @param text to parse
+     * Parses the specified text with specified parameters and creates a new instance of the TranslitDocument.
+     * The EagerMatchSelectionStrategy will be used as default selection strategy.
+     *
+     * @param dict translit dictionary
+     * @param text to transliteration
      * @param side text will be transliterated from the specified side into an opposite side
      * @return new instance of TranslitDocument
      * @throws TranslitDocumentException
      */
-    public static TranslitDocument parse(
+    public static TranslitDocument create(
             TranslitDictionary dict,
             String text,
             TranslitDictionary.Side side)
             throws TranslitDocumentException {
-        return parse(dict, text, side, null);
+        return create(dict, text, side, null);
     }
 
     /**
-     * Parses of the specified {@see text} with the specified {@see dictionary}
-     * and creating a new instance of TranslitDocument
+     * Parses the specified {@see text} with the specified {@see dictionary} and {@see strategy}
+     * and creates a new instance of the TranslitDocument
      *
-     * @param dict TranslitDictionary
-     * @param text to parse
-     * @param text will be transliterated from the specified side into an opposite side
-     * @param matchSelectionStrategy selection strategy
+     * @param dict     TranslitDictionary
+     * @param text     to transliteration
+     * @param side     text will be transliterated from the specified side into an opposite side
+     * @param strategy match selection strategy
      * @return new instance of TranslitDocument
      * @throws TranslitDocumentException
      */
-    public static TranslitDocument parse(
+    public static TranslitDocument create(
             TranslitDictionary dict,
             String text,
             TranslitDictionary.Side side,
-            MatchSelectionStrategy matchSelectionStrategy)
+            MatchSelectionStrategy strategy)
             throws TranslitDocumentException {
         TranslitDocument doc = new TranslitDocument(dict);
-        doc.setMatchSelectionStrategy(matchSelectionStrategy);
+        doc.setMatchSelectionStrategy(strategy);
         ParsingContext parsingContext = doc.parse(text, side);
         doc.elements.addAll(parsingContext.elements());
         return doc;
@@ -76,7 +79,8 @@ public class TranslitDocument {
     }
 
     /**
-     * Returns {@see matchSelectionStrategy} property, if value is null then creates new instance of EagerMatchSelectionStrategy
+     * Returns {@see matchSelectionStrategy} property, if value of the property is null then
+     * creates a new instance of the EagerMatchSelectionStrategy
      *
      * @return matchSelectionStrategy property.
      */
@@ -101,14 +105,14 @@ public class TranslitDocument {
     /**
      * Returns the content at the specified position in this document
      *
-     * @param pos element position
+     * @param pos  element position
      * @param side in dictionary (left or right)
      * @return String content of element
      * @throws TranslitDocumentException
      */
     public String getElementData(int pos, TranslitDictionary.Side side) throws TranslitDocumentException {
         validatePosition(pos);
-        return getElement(pos).buildValue(new BuildingContext(true, side));
+        return getElement(pos).getStringValue(new StringBuildingContext(true, side));
     }
 
     /**
@@ -133,50 +137,45 @@ public class TranslitDocument {
      * Inserts the specified {@see text} at the specified {@see index} of the document's elements.
      * The {@see text} will be transliterated from the specified {@see side} into an opposite side.
      * The {@see index} means an element index, it is not index in a text content. To retrieve the element index by position in the content use {@link #convertToElementIndex(int, org.romppu.translit.TranslitDictionary.Side)} method
+     *
      * @param index element index
-     * @param text to insert
-     * @param side text will be transliterated from the specified side into an opposite side
+     * @param text  to insert
+     * @param side  text will be transliterated from the specified side into an opposite side
      * @throws TranslitDocumentException
      */
     public void insertAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
-        /*if (elements.size() == 0
-                || index == 0
-                || !(elements.get(index - 1 == 0 ? 0 : index - 1) instanceof IndexElement)) {
-            ParsingContext context = parse(text, side);
-            elements.addAll(index, context.elements());
-        } else {*/
-            int longestWord = getDictionary().getLongestWordLen(side);
+        int longestWord = getDictionary().getLongestWordLen(side);
 
-            int startIndex = index;
-            while (index - startIndex != longestWord
-                    && startIndex - 1 > -1
-                    && (elements.get(startIndex - 1) instanceof IndexElement)) startIndex--;
+        int startIndex = index;
+        while (index - startIndex != longestWord
+                && startIndex - 1 > -1
+                && (elements.get(startIndex - 1) instanceof IndexElement)) startIndex--;
 
-            int endIndex = index;
-            while (endIndex - index != longestWord
+        int endIndex = index;
+        while (endIndex - index != longestWord
                 && endIndex + 1 < elements.size()
                 && (elements.get(endIndex + 1) instanceof IndexElement)) endIndex++;
 
-            String prevString = buildString(startIndex, index, false, side);
-            String nextString = buildString(index, endIndex, false, side);
-            removeElements(startIndex, endIndex - startIndex);
-            ParsingContext context = parse(prevString + text + nextString, side);
-            elements.addAll(startIndex, context.elements());
-        //}
+        String prevString = buildString(startIndex, index, false, side);
+        String nextString = buildString(index, endIndex, false, side);
+        removeElements(startIndex, endIndex - startIndex);
+        ParsingContext context = parse(prevString + text + nextString, side);
+        elements.addAll(startIndex, context.elements());
     }
 
     /**
      * Converts the specified position to the element index with the specified side
+     *
      * @param position position in string
-     * @param side LEFT or RIGHT
+     * @param side     LEFT or RIGHT
      * @return element index
      */
     public int convertToElementIndex(int position, TranslitDictionary.Side side) {
         int currentPosition = 0;
-        BuildingContext buildingContext = new BuildingContext(true, side);
+        StringBuildingContext stringBuildingContext = new StringBuildingContext(true, side);
         for (int i = 0; i < elements.size(); i++) {
             Element element = elements.get(i);
-            String elementValue = element.buildValue(buildingContext);
+            String elementValue = element.getStringValue(stringBuildingContext);
             currentPosition += elementValue.length();
             if (currentPosition >= position) return i;
         }
@@ -185,8 +184,9 @@ public class TranslitDocument {
 
     /**
      * Removes the specified {@see amount} of elements from the specified {@see position} of the document.
+     *
      * @param position removes from
-     * @param amount elements amount
+     * @param amount   elements amount
      */
     public void removeElements(int position, int amount) {
         Vector<Element> toRemove = new Vector<Element>();
@@ -206,11 +206,11 @@ public class TranslitDocument {
     }
 
     private String buildString(List<Element> list, boolean markersShowed, TranslitDictionary.Side side) throws TranslitDocumentException {
-        BuildingContext buildingContext = new BuildingContext(markersShowed, side);
+        StringBuildingContext stringBuildingContext = new StringBuildingContext(markersShowed, side);
         StringBuffer buf = new StringBuffer();
         for (Iterator<Element> i = list.iterator(); i.hasNext(); ) {
             Element e = i.next();
-            String newChar = e.buildValue(buildingContext);
+            String newChar = e.getStringValue(stringBuildingContext);
             buf.append(newChar);
         }
         return buf.toString();
@@ -293,7 +293,7 @@ public class TranslitDocument {
         }
 
         public String toString() {
-            return stringPart +";idx=" + index;
+            return stringPart + ";idx=" + index;
         }
     }
 
@@ -342,7 +342,7 @@ public class TranslitDocument {
         }
     }
 
-    class BuildingContext {
+    class StringBuildingContext {
 
         final private boolean markersShowed;
 
@@ -350,10 +350,11 @@ public class TranslitDocument {
 
         private boolean inExclusionBlock;
 
-        public BuildingContext(boolean markersShowed, TranslitDictionary.Side side) {
+        public StringBuildingContext(boolean markersShowed, TranslitDictionary.Side side) {
             this.markersShowed = markersShowed;
             this.side = side;
         }
+
         public boolean isMarkersShowed() {
             return markersShowed;
         }
@@ -372,7 +373,7 @@ public class TranslitDocument {
     }
 
     abstract class Element {
-        public abstract String buildValue(BuildingContext buildingContext);
+        public abstract String getStringValue(StringBuildingContext stringBuildingContext);
     }
 
 
@@ -385,10 +386,10 @@ public class TranslitDocument {
         }
 
         @Override
-        public String buildValue(BuildingContext buildingContext) {
+        public String getStringValue(StringBuildingContext stringBuildingContext) {
             return getDictionary().getValueAt(index,
-                    buildingContext.isInExclusionBlock()
-                            ? buildingContext.getSide().invert() : buildingContext.getSide());
+                    stringBuildingContext.isInExclusionBlock()
+                            ? stringBuildingContext.getSide().invert() : stringBuildingContext.getSide());
         }
     }
 
@@ -401,7 +402,7 @@ public class TranslitDocument {
         }
 
         @Override
-        public String buildValue(BuildingContext buildingContext) {
+        public String getStringValue(StringBuildingContext stringBuildingContext) {
             return data;
         }
     }
@@ -415,8 +416,8 @@ public class TranslitDocument {
         }
 
         @Override
-        public String buildValue(BuildingContext buildingContext) {
-            buildingContext.setInExclusionBlock(isStartMarker);
+        public String getStringValue(StringBuildingContext stringBuildingContext) {
+            stringBuildingContext.setInExclusionBlock(isStartMarker);
             return isStartMarker ? getDictionary().getExcludeMarkerBegin() : getDictionary().getExcludeMarkerEnd();
         }
     }
