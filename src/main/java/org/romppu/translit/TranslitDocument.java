@@ -149,20 +149,27 @@ public class TranslitDocument {
         int startIndex = index;
         while (index - startIndex != longestWord
                 && startIndex - 1 > -1
-                && (elements.get(startIndex - 1) instanceof IndexElement)) startIndex--;
+                && (elements.size() > 0 && elements.get(startIndex - 1) instanceof IndexElement)) startIndex--;
 
         int endIndex = index;
         while (endIndex - index != longestWord
                 && endIndex + 1 < elements.size()
                 && (elements.get(endIndex + 1) instanceof IndexElement)) endIndex++;
 
-        String prevString = buildString(startIndex, index, false, side);
-        String nextString = buildString(index, endIndex, false, side);
+        String prevString = index - startIndex > 0 ? buildString(startIndex, index, false, side) : "";
+        String nextString = endIndex - index > 0 ? buildString(index, endIndex, false, side) : "";
         removeElements(startIndex, endIndex - startIndex);
         ParsingContext context = parse(prevString + text + nextString, side);
         elements.addAll(startIndex, context.elements());
     }
 
+    /**
+     * Returns document size
+     * @return size of elements in the document
+     */
+    public int getSize() {
+        return elements.size();
+    }
     /**
      * Converts the specified position to the element index with the specified side
      *
