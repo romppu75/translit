@@ -71,12 +71,12 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      * @throws Exception
      */
     public void load() throws JAXBException {
-        System.out.println("Loading profile from " + getDocumentPath());
+        System.out.println("Loading dictionary profile from " + getDocumentPath());
         JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
         Unmarshaller u = jc.createUnmarshaller();
-        translitProfile = (TranslitProfile) u.unmarshal(new File(getDocumentPath()));
+        translitProfile = (TranslitProfile) u.unmarshal(getClass().getResourceAsStream(getDocumentPath()));
         updateLongestWordLen();
-        System.out.println("Profile version is " + translitProfile.getVersion() + ", done.");
+        System.out.println("Dictionary profile version is " + translitProfile.getVersion() + ", done.");
     }
 
     /**
