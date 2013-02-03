@@ -145,7 +145,12 @@ public class TranslitDocument {
      */
     public void insertAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
         int longestWord = getDictionary().getLongestWordLen(side);
-
+        if (index > elements.size()) {
+            index = elements.size();
+        }
+        if (index < 0) {
+            index = 0;
+        }
         int startIndex = index;
         while (index - startIndex != longestWord
                 && startIndex - 1 > -1
@@ -224,7 +229,7 @@ public class TranslitDocument {
     }
 
     protected String buildString(int start, int end, boolean markersShowed, TranslitDictionary.Side side) throws TranslitDocumentException {
-        validateElementsRange(start, end);
+        //validateElementsRange(start, end);
         return buildString(elements.subList(start, end), markersShowed, side);
     }
 
