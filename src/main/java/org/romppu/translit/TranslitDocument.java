@@ -134,6 +134,17 @@ public class TranslitDocument {
     }
 
     /**
+     * Returns elements as string
+     * @param elementList to process
+     * @param side text will be transliterated from the specified side into an opposite side
+     * @return transliterated text
+     * @throws TranslitDocumentException
+     */
+    public String getString(List<Element> elementList, TranslitDictionary.Side side) throws TranslitDocumentException {
+        return buildString(elementList, false, side);
+    }
+
+    /**
      * Inserts the specified {@see text} at the specified {@see index} of the document's elements.
      * The {@see text} will be transliterated from the specified {@see side} into an opposite side.
      * The {@see index} means an element index, it is not index in a text content. To retrieve the element index by position in the content use {@link #convertToElementIndex(int, org.romppu.translit.TranslitDictionary.Side)} method
@@ -141,40 +152,57 @@ public class TranslitDocument {
      * @param index element index
      * @param text  to insert
      * @param side  text will be transliterated from the specified side into an opposite side
+     * @return result of insert operation
      * @throws TranslitDocumentException
      */
-    public void insertAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
-        int longestWord = getDictionary().getLongestWordLen(side);
+    public Mutation insertAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
+        Mutation result = new Mutation();
         if (index > elements.size()) {
             index = elements.size();
         }
         if (index < 0) {
             index = 0;
         }
-        int startIndex = index;
-        while (index - startIndex != longestWord
-                && startIndex - 1 > -1
-                && (elements.size() > 0 && elements.get(startIndex - 1) instanceof IndexElement)) startIndex--;
+        int longestWord = getDictionary().getLongestWordLen(side);
+        result.setStartIndex(leftShift(index, longestWord));
+        result.setEndIndex(rightShift(index, longestWord));
+        String prevString = index - result.startIndex > 0 ? buildString(result.startIndex, index, false, side) : "";
+        String nextString = result.endIndex - index > 0 ? buildString(index, result.endIndex, false, side) : "";
+        removeElements(result.startIndex, result.endIndex - result.startIndex);
+        ParsingContext parsingContext = parse(prevString + text + nextString, side);
+        result.setElementList(parsingContext.elements());
+        elements.addAll(result.startIndex, result.getElementList());
+        return result;
+    }
 
-        int endIndex = index;
-        while (endIndex - index != longestWord
-                && endIndex + 1 < elements.size()
-                && (elements.get(endIndex + 1) instanceof IndexElement)) endIndex++;
+    private int leftShift(int index, int longestWord) {
+        int leftIndex = index;
+        while (index - leftIndex != longestWord
+                && leftIndex - 1 > -1
+                && (elements.size() > 0 && elements.get(leftIndex - 1) instanceof IndexElement))
+            leftIndex--;
 
-        String prevString = index - startIndex > 0 ? buildString(startIndex, index, false, side) : "";
-        String nextString = endIndex - index > 0 ? buildString(index, endIndex, false, side) : "";
-        removeElements(startIndex, endIndex - startIndex);
-        ParsingContext context = parse(prevString + text + nextString, side);
-        elements.addAll(startIndex, context.elements());
+        return leftIndex;
+    }
+
+    private int rightShift(int index, int longestWord) {
+        int rightIndex = index;
+        while (rightIndex - index != longestWord
+                && rightIndex + 1 < elements.size()
+                && (elements.get(rightIndex + 1) instanceof IndexElement)) rightIndex++;
+
+        return rightIndex;
     }
 
     /**
      * Returns document size
+     *
      * @return size of elements in the document
      */
     public int getSize() {
         return elements.size();
     }
+
     /**
      * Converts the specified position to the element index with the specified side
      *
@@ -193,6 +221,25 @@ public class TranslitDocument {
         }
         return -1;
     }
+
+    /**
+     * Converts the specified element index to the text position with the specified side
+     * @param startIndex starts counting from the specified element index
+     * @param indexToConvert index of element which will be converted to text position
+     * @param side     LEFT or RIGHT
+     * @return element index
+     */
+    public int convertToTextPosition(int startIndex, int indexToConvert, TranslitDictionary.Side side) {
+        int currentPosition = 0;
+        StringBuildingContext stringBuildingContext = new StringBuildingContext(true, side);
+        for (int i = startIndex; i < indexToConvert; i++) {
+            Element element = elements.get(i);
+            String elementValue = element.getStringValue(stringBuildingContext);
+            currentPosition += elementValue.length();
+        }
+        return currentPosition;
+    }
+
 
     /**
      * Removes the specified {@see amount} of elements from the specified {@see position} of the document.
@@ -283,6 +330,36 @@ public class TranslitDocument {
         }));
     }
 
+    public static class Mutation {
+        private List<Element> elementList;
+        private int startIndex;
+        private int endIndex;
+
+        public List<Element> getElementList() {
+            return elementList;
+        }
+
+        protected void setElementList(List<Element> elementList) {
+            this.elementList = elementList;
+        }
+
+        public int getStartIndex() {
+            return startIndex;
+        }
+
+        protected void setStartIndex(int startIndex) {
+            this.startIndex = startIndex;
+        }
+
+        public int getEndIndex() {
+            return endIndex;
+        }
+
+        protected void setEndIndex(int endIndex) {
+            this.endIndex = endIndex;
+        }
+    }
+
     public class Match {
         private int index;
         private String stringPart;
@@ -354,7 +431,7 @@ public class TranslitDocument {
         }
     }
 
-    class StringBuildingContext {
+    public static class StringBuildingContext {
 
         final private boolean markersShowed;
 
@@ -384,12 +461,12 @@ public class TranslitDocument {
         }
     }
 
-    abstract class Element {
+    public abstract static class Element {
         public abstract String getStringValue(StringBuildingContext stringBuildingContext);
     }
 
 
-    class IndexElement extends Element {
+    public class IndexElement extends Element {
 
         private int index;
 
@@ -405,7 +482,7 @@ public class TranslitDocument {
         }
     }
 
-    class DataElement extends Element {
+    public class DataElement extends Element {
 
         private String data;
 
@@ -419,7 +496,7 @@ public class TranslitDocument {
         }
     }
 
-    class ExclusionMarkerElement extends Element {
+    public class ExclusionMarkerElement extends Element {
 
         private boolean isStartMarker;
 
