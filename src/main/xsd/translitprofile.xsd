@@ -12,12 +12,9 @@
                 </xs:element>
             </xs:sequence>
             <xs:attribute type="xs:string" name="name"/>
-            <xs:attribute type="xs:string" name="version" fixed="1.0"/>
-            <xs:attribute type="xs:string" name="excludeMarkerBegin"/>
-            <xs:attribute type="xs:string" name="excludeMarkerEnd"/>
+            <xs:attribute type="xs:string" name="version" fixed="2.0"/>
             <xs:attribute type="xs:string" name="leftDescription"/>
             <xs:attribute type="xs:string" name="rightDescription"/>
-            <xs:attribute type="xs:string" name="separator"/>
         </xs:complexType>
     </xs:element>
 </xs:schema>

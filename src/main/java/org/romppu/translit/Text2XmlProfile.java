@@ -28,11 +28,7 @@ public class Text2XmlProfile {
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             TranslitProfile profile = new TranslitProfile();
-            profile.setExcludeMarkerBegin("[");
-            profile.setExcludeMarkerEnd("]");
-            profile.setSeparator("|");
             profile.setName(params[0].substring(0, params[0].lastIndexOf(".")));
-            //profile.setVersion("1.0");
             profile.setLeftDescription("cyrillic");
             profile.setRightDescription("latin");
             String line = null;

@@ -1,4 +1,5 @@
 import org.romppu.translit.TranslitDictionary;
+import org.romppu.translit.TranslitDictionaryHolder;
 import org.romppu.translit.TranslitDocument;
 import org.romppu.translit.XmlTranslitDictionary;
 
@@ -11,8 +12,9 @@ public class TestTranslit {
 
     public static void main(String... params) {
         try {
-            XmlTranslitDictionary dictionary = new XmlTranslitDictionary("/cyrillic_default.xml");
-            TranslitDocument document = TranslitDocument.create(dictionary, "SCH'i - pisch'a nasha!", TranslitDictionary.Side.RIGHT);
+            String originText = "SCH'i - pisch'a nasha!";
+            System.out.println("Transliterate text:" + originText);
+            TranslitDocument document = TranslitDocument.create(TranslitDictionaryHolder.getInstance().getDictionary(), "SCH'i - pisch'a nasha!", TranslitDictionary.Side.RIGHT);
             System.out.println(document.getString(TranslitDictionary.Side.LEFT));
             String newString = " da kasha";
             int insertionIndex = document.convertToElementIndex(6, TranslitDictionary.Side.RIGHT);

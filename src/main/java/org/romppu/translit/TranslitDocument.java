@@ -112,7 +112,7 @@ public class TranslitDocument {
      */
     public String getElementData(int pos, TranslitDictionary.Side side) throws TranslitDocumentException {
         validatePosition(pos);
-        return getElement(pos).getStringValue(new StringBuildingContext(true, side));
+        return getElement(pos).getStringValue(new StringBuildingContext(side));
     }
 
     /**
@@ -130,7 +130,7 @@ public class TranslitDocument {
      * @throws TranslitDocumentException
      */
     public String getString(TranslitDictionary.Side side) throws TranslitDocumentException {
-        return buildString(0, elements.size(), false, side);
+        return buildString(0, elements.size(), side);
     }
 
     /**
@@ -141,7 +141,7 @@ public class TranslitDocument {
      * @throws TranslitDocumentException
      */
     public String getString(List<Element> elementList, TranslitDictionary.Side side) throws TranslitDocumentException {
-        return buildString(elementList, false, side);
+        return buildString(elementList, side);
     }
 
     /**
@@ -156,42 +156,34 @@ public class TranslitDocument {
      * @throws TranslitDocumentException
      */
     public Mutation insertAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
-        Mutation result = new Mutation();
-        if (index > elements.size()) {
-            index = elements.size();
+        if (index > elements.size() || index < 0) {
+            throw new TranslitDocumentException("Invalid index " + index);
         }
-        if (index < 0) {
-            index = 0;
-        }
+        Mutation mutation = leftShift(index, side);
+        removeElements(mutation.getLeftIndex(), mutation.getMutatedElementsAmount());
+        mutation.getStringBuffer().append(text);
+        ParsingContext parsingContext = parse(mutation.getStringBuffer().toString(), side);
+        mutation.setElementList(parsingContext.elements());
+        elements.addAll(mutation.getLeftIndex(), mutation.getElementList());
+        return mutation;
+    }
+
+    private Mutation leftShift(int index, TranslitDictionary.Side side) {
         int longestWord = getDictionary().getLongestWordLen(side);
-        result.setStartIndex(leftShift(index, longestWord));
-        result.setEndIndex(rightShift(index, longestWord));
-        String prevString = index - result.startIndex > 0 ? buildString(result.startIndex, index, false, side) : "";
-        String nextString = result.endIndex - index > 0 ? buildString(index, result.endIndex, false, side) : "";
-        removeElements(result.startIndex, result.endIndex - result.startIndex);
-        ParsingContext parsingContext = parse(prevString + text + nextString, side);
-        result.setElementList(parsingContext.elements());
-        elements.addAll(result.startIndex, result.getElementList());
-        return result;
-    }
-
-    private int leftShift(int index, int longestWord) {
-        int leftIndex = index;
-        while (index - leftIndex != longestWord
-                && leftIndex - 1 > -1
-                && (elements.size() > 0 && elements.get(leftIndex - 1) instanceof IndexElement))
-            leftIndex--;
-
-        return leftIndex;
-    }
-
-    private int rightShift(int index, int longestWord) {
-        int rightIndex = index;
-        while (rightIndex - index != longestWord
-                && rightIndex + 1 < elements.size()
-                && (elements.get(rightIndex + 1) instanceof IndexElement)) rightIndex++;
-
-        return rightIndex;
+        Mutation mutation = new Mutation();
+        mutation.setLeftIndex(index);
+        if (elements.size() > 0) {
+            StringBuildingContext buildingContext = new StringBuildingContext(side);
+            while (mutation.getStringBuffer().length() < longestWord
+                    && mutation.getLeftIndex() > 0
+                    && elements.get(mutation.getLeftIndex() - 1) instanceof IndexElement) {
+                mutation.setLeftIndex(mutation.getLeftIndex() - 1);
+                Element element = elements.get(mutation.getLeftIndex());
+                mutation.getStringBuffer().insert(0, element.getStringValue(buildingContext));
+            }
+        }
+        mutation.setMutatedElementsAmount(index - mutation.getLeftIndex());
+        return mutation;
     }
 
     /**
@@ -212,14 +204,15 @@ public class TranslitDocument {
      */
     public int convertToElementIndex(int position, TranslitDictionary.Side side) {
         int currentPosition = 0;
-        StringBuildingContext stringBuildingContext = new StringBuildingContext(true, side);
+        if (position == 0) return currentPosition;
+        StringBuildingContext stringBuildingContext = new StringBuildingContext(side);
         for (int i = 0; i < elements.size(); i++) {
             Element element = elements.get(i);
             String elementValue = element.getStringValue(stringBuildingContext);
             currentPosition += elementValue.length();
             if (currentPosition >= position) return i;
         }
-        return -1;
+        return elements.size();
     }
 
     /**
@@ -231,7 +224,7 @@ public class TranslitDocument {
      */
     public int convertToTextPosition(int startIndex, int indexToConvert, TranslitDictionary.Side side) {
         int currentPosition = 0;
-        StringBuildingContext stringBuildingContext = new StringBuildingContext(true, side);
+        StringBuildingContext stringBuildingContext = new StringBuildingContext(side);
         for (int i = startIndex; i < indexToConvert; i++) {
             Element element = elements.get(i);
             String elementValue = element.getStringValue(stringBuildingContext);
@@ -264,20 +257,20 @@ public class TranslitDocument {
         return dictionary;
     }
 
-    private String buildString(List<Element> list, boolean markersShowed, TranslitDictionary.Side side) throws TranslitDocumentException {
-        StringBuildingContext stringBuildingContext = new StringBuildingContext(markersShowed, side);
-        StringBuffer buf = new StringBuffer();
+    private String buildString(List<Element> list, TranslitDictionary.Side side) throws TranslitDocumentException {
+        StringBuildingContext stringBuildingContext = new StringBuildingContext(side);
+        StringBuffer stringBuffer = new StringBuffer();
         for (Iterator<Element> i = list.iterator(); i.hasNext(); ) {
             Element e = i.next();
             String newChar = e.getStringValue(stringBuildingContext);
-            buf.append(newChar);
+            stringBuffer.append(newChar);
         }
-        return buf.toString();
+        return stringBuffer.toString();
     }
 
-    protected String buildString(int start, int end, boolean markersShowed, TranslitDictionary.Side side) throws TranslitDocumentException {
+    protected String buildString(int start, int end, TranslitDictionary.Side side) throws TranslitDocumentException {
         //validateElementsRange(start, end);
-        return buildString(elements.subList(start, end), markersShowed, side);
+        return buildString(elements.subList(start, end), side);
     }
 
     private ParsingContext parse(String text, TranslitDictionary.Side side) {
@@ -292,17 +285,14 @@ public class TranslitDocument {
                 }
             }
             if (!matchSet.isEmpty()) {
+                context.indexElementsCount++;
                 context.matchesVector.add(matchSet);
                 Match selectedMatch = getMatchSelectionStrategy().selectMatch(context);
                 context.position += selectedMatch.length();
                 context.elements.add(new IndexElement(selectedMatch.index()));
             } else {
                 String data = String.valueOf(part.charAt(0));
-                if (data.equals(getDictionary().getExcludeMarkerBegin()) || data.equals(getDictionary().getExcludeMarkerEnd())) {
-                    context.elements.add(new ExclusionMarkerElement(data.equals(getDictionary().getExcludeMarkerBegin())));
-                } else {
-                    context.elements.add(new DataElement(data));
-                }
+                context.elements.add(new DataElement(data));
                 context.position++;
             }
         }
@@ -323,17 +313,18 @@ public class TranslitDocument {
     }
 
     private SortedSet<Match> newSynchronizedSortedSet() {
-        return Collections.synchronizedSortedSet(new TreeSet(new Comparator() {
+        return new TreeSet(new Comparator() {
             public int compare(Object o1, Object o2) {
                 return ((Match) o1).length().compareTo(((Match) o2).length());
             }
-        }));
+        });
     }
 
     public static class Mutation {
         private List<Element> elementList;
-        private int startIndex;
-        private int endIndex;
+        private final StringBuffer stringBuffer = new StringBuffer(4);
+        private int leftIndex;
+        private int mutatedElementsAmount;
 
         public List<Element> getElementList() {
             return elementList;
@@ -343,20 +334,24 @@ public class TranslitDocument {
             this.elementList = elementList;
         }
 
-        public int getStartIndex() {
-            return startIndex;
+        public int getLeftIndex() {
+            return leftIndex;
         }
 
-        protected void setStartIndex(int startIndex) {
-            this.startIndex = startIndex;
+        protected void setLeftIndex(int leftIndex) {
+            this.leftIndex = leftIndex;
         }
 
-        public int getEndIndex() {
-            return endIndex;
+        public int getMutatedElementsAmount() {
+            return mutatedElementsAmount;
         }
 
-        protected void setEndIndex(int endIndex) {
-            this.endIndex = endIndex;
+        protected void setMutatedElementsAmount(int mutatedElementsAmount) {
+            this.mutatedElementsAmount = mutatedElementsAmount;
+        }
+
+        public StringBuffer getStringBuffer() {
+            return stringBuffer;
         }
     }
 
@@ -388,6 +383,7 @@ public class TranslitDocument {
 
     public class ParsingContext {
         private TranslitDictionary.Side side;
+        private int indexElementsCount;
         private String text;
         private Vector elements = new Vector();
         private int position;
@@ -433,32 +429,16 @@ public class TranslitDocument {
 
     public static class StringBuildingContext {
 
-        final private boolean markersShowed;
-
         final private TranslitDictionary.Side side;
 
-        private boolean inExclusionBlock;
-
-        public StringBuildingContext(boolean markersShowed, TranslitDictionary.Side side) {
-            this.markersShowed = markersShowed;
+        public StringBuildingContext(TranslitDictionary.Side side) {
             this.side = side;
-        }
-
-        public boolean isMarkersShowed() {
-            return markersShowed;
         }
 
         public TranslitDictionary.Side getSide() {
             return side;
         }
 
-        public boolean isInExclusionBlock() {
-            return inExclusionBlock;
-        }
-
-        public void setInExclusionBlock(boolean inExclusionBlock) {
-            this.inExclusionBlock = inExclusionBlock;
-        }
     }
 
     public abstract static class Element {
@@ -475,10 +455,8 @@ public class TranslitDocument {
         }
 
         @Override
-        public String getStringValue(StringBuildingContext stringBuildingContext) {
-            return getDictionary().getValueAt(index,
-                    stringBuildingContext.isInExclusionBlock()
-                            ? stringBuildingContext.getSide().invert() : stringBuildingContext.getSide());
+        public String getStringValue(StringBuildingContext buildingContext) {
+            return getDictionary().getValueAt(index, buildingContext.getSide());
         }
     }
 
@@ -493,21 +471,6 @@ public class TranslitDocument {
         @Override
         public String getStringValue(StringBuildingContext stringBuildingContext) {
             return data;
-        }
-    }
-
-    public class ExclusionMarkerElement extends Element {
-
-        private boolean isStartMarker;
-
-        public ExclusionMarkerElement(boolean isStartMarker) {
-            this.isStartMarker = isStartMarker;
-        }
-
-        @Override
-        public String getStringValue(StringBuildingContext stringBuildingContext) {
-            stringBuildingContext.setInExclusionBlock(isStartMarker);
-            return isStartMarker ? getDictionary().getExcludeMarkerBegin() : getDictionary().getExcludeMarkerEnd();
         }
     }
 

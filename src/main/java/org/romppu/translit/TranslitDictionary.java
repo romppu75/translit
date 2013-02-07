@@ -37,7 +37,10 @@ public interface TranslitDictionary {
 
     public int getLongestWordLen(Side side);
 
-    public String getExcludeMarkerBegin();
+    /**
+     * Returns version info
+     * @return version number in format major.minor
+     */
+    public String getVersion();
 
-    public String getExcludeMarkerEnd();
 }

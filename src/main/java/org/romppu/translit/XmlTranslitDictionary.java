@@ -153,44 +153,6 @@ public class XmlTranslitDictionary implements TranslitDictionary {
     }
 
     /**
-     * Wrapper for {@link org.romppu.translit.profile.TranslitProfile#getExcludeMarkerBegin()}
-     *
-     * @return {@link TranslitProfile#excludeMarkerBegin} property value
-     */
-    @Override
-    public String getExcludeMarkerBegin() {
-        return translitProfile.getExcludeMarkerBegin();
-    }
-
-    /**
-     * Wrapper of {@link TranslitProfile#setExcludeMarkerBegin(String)}
-     *
-     * @param newValue
-     */
-    public void setExcludeMarkerBegin(String newValue) {
-        translitProfile.setExcludeMarkerBegin(newValue);
-    }
-
-    /**
-     * Wrapper for {@link org.romppu.translit.profile.TranslitProfile#getExcludeMarkerEnd()}
-     *
-     * @return {@link TranslitProfile#excludeMarkerEnd} property value
-     */
-    @Override
-    public String getExcludeMarkerEnd() {
-        return translitProfile.getExcludeMarkerEnd();
-    }
-
-    /**
-     * Wrapper of {@link TranslitProfile#setExcludeMarkerEnd(String)}
-     *
-     * @param newValue
-     */
-    public void setExcludeMarkerEnd(String newValue) {
-        translitProfile.setExcludeMarkerEnd(newValue);
-    }
-
-    /**
      * Wrapper of {@link org.romppu.translit.profile.TranslitProfile#getVersion()}
      *
      * @return {@link org.romppu.translit.profile.TranslitProfile#version} property value
