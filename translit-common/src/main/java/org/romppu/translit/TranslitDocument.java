@@ -160,11 +160,15 @@ public class TranslitDocument {
             throw new TranslitDocumentException("Invalid index " + index);
         }
         Mutation mutation = leftShift(index, side);
-        removeElements(mutation.getLeftIndex(), mutation.getMutatedElementsAmount());
+        removeElements(mutation.getLeftIndex(), mutation.getOldElements().size());
         mutation.getStringBuffer().append(text);
         ParsingContext parsingContext = parse(mutation.getStringBuffer().toString(), side);
-        mutation.setElementList(parsingContext.elements());
-        elements.addAll(mutation.getLeftIndex(), mutation.getElementList());
+        mutation.getNewElements().addAll(parsingContext.elements());
+        mutation.offset = index;
+        if (mutation.getNewElements().size() - 1 < mutation.getOldElements().size()) {
+            mutation.offset = mutation.offset - (mutation.getOldElements().size() - (mutation.getNewElements().size() - 1));
+        }
+        elements.addAll(mutation.getLeftIndex(), mutation.getNewElements());
         return mutation;
     }
 
@@ -179,10 +183,10 @@ public class TranslitDocument {
                     && elements.get(mutation.getLeftIndex() - 1) instanceof IndexElement) {
                 mutation.setLeftIndex(mutation.getLeftIndex() - 1);
                 Element element = elements.get(mutation.getLeftIndex());
+                mutation.getOldElements().add(0, element);
                 mutation.getStringBuffer().insert(0, element.getStringValue(buildingContext));
             }
         }
-        mutation.setMutatedElementsAmount(index - mutation.getLeftIndex());
         return mutation;
     }
 
@@ -292,7 +296,7 @@ public class TranslitDocument {
                 context.elements.add(new IndexElement(selectedMatch.index()));
             } else {
                 String data = String.valueOf(part.charAt(0));
-                context.elements.add(new DataElement(data));
+                context.elements.add(new CharacterElement(data));
                 context.position++;
             }
         }
@@ -321,17 +325,18 @@ public class TranslitDocument {
     }
 
     public static class Mutation {
-        private List<Element> elementList;
+        private int offset;
+        private ArrayList<Element> oldElements = new ArrayList<Element>();
+        private ArrayList<Element> newElements = new ArrayList<Element>();
         private final StringBuffer stringBuffer = new StringBuffer(4);
         private int leftIndex;
-        private int mutatedElementsAmount;
 
-        public List<Element> getElementList() {
-            return elementList;
+        public ArrayList<Element> getOldElements() {
+            return oldElements;
         }
 
-        protected void setElementList(List<Element> elementList) {
-            this.elementList = elementList;
+        protected void setOldElements(ArrayList<Element> oldElements) {
+            this.oldElements = oldElements;
         }
 
         public int getLeftIndex() {
@@ -342,16 +347,24 @@ public class TranslitDocument {
             this.leftIndex = leftIndex;
         }
 
-        public int getMutatedElementsAmount() {
-            return mutatedElementsAmount;
-        }
-
-        protected void setMutatedElementsAmount(int mutatedElementsAmount) {
-            this.mutatedElementsAmount = mutatedElementsAmount;
-        }
-
         public StringBuffer getStringBuffer() {
             return stringBuffer;
+        }
+
+        public ArrayList<Element> getNewElements() {
+            return newElements;
+        }
+
+        public void setNewElements(ArrayList<Element> newElements) {
+            this.newElements = newElements;
+        }
+
+        public Element lastElement() {
+            return newElements.get(newElements.size() - 1);
+        }
+
+        public int getOffset() {
+            return offset;
         }
     }
 
@@ -445,7 +458,6 @@ public class TranslitDocument {
         public abstract String getStringValue(StringBuildingContext stringBuildingContext);
     }
 
-
     public class IndexElement extends Element {
 
         private int index;
@@ -460,11 +472,11 @@ public class TranslitDocument {
         }
     }
 
-    public class DataElement extends Element {
+    public class CharacterElement extends Element {
 
         private String data;
 
-        public DataElement(String data) {
+        public CharacterElement(String data) {
             this.data = data;
         }
 

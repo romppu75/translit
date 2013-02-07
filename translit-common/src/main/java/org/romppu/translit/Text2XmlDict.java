@@ -12,11 +12,11 @@ import java.nio.charset.Charset;
  * Date: 4.1.2013
  * Time: 13:47
  */
-public class Text2XmlProfile {
+public class Text2XmlDict {
 
     public static void main(String... params) {
         if (params.length == 0) {
-            System.out.println("Usage: Text2XmlProfile filename ");
+            System.out.println("Usage: Text2XmlDict filename ");
             System.exit(-1);
         }
         File file = new File(params[0]);

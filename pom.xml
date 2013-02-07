@@ -6,51 +6,13 @@
 
     <groupId>org.romppu.translit</groupId>
     <artifactId>translit</artifactId>
-    <version>2.0-SNAPSHOT</version>
-    <dependencies>
-        <dependency>
-            <groupId>javax.xml.bind</groupId>
-            <artifactId>jaxb-api</artifactId>
-            <version>2.2</version>
-        </dependency>
-    </dependencies>
-    <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>2.5.1</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
-        <plugins>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jaxb2-maven-plugin</artifactId>
-                <version>1.5</version>
-                <executions>
-                    <execution>
+    <packaging>pom</packaging>
+    <version>2.1</version>
+    <modules>
+        <module>translit-common</module>
+        <module>translit-swing</module>
+    </modules>
 
-                        <id>xjc</id>
-                        <goals>
-                            <goal>xjc</goal>
-                        </goals>
-
-                    </execution>
-                </executions>
-
-                <configuration>
-                    <includes>
-                        <include>translitprofile.xsd</include>
-                    </includes>
-                    <packageName>org.romppu.translit.profile</packageName>
-                </configuration>
-
-            </plugin>
-
-        </plugins>
-    </build>
     <reporting>
         <plugins>
             <plugin>

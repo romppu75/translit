@@ -277,8 +277,16 @@
         <right>y'</right>
     </pair>
     <pair>
+        <left>ы</left>
+        <right>q</right>
+    </pair>
+    <pair>
         <left>Ы</left>
         <right>Y'</right>
+    </pair>
+    <pair>
+        <left>Ы</left>
+        <right>Q</right>
     </pair>
     <pair>
         <left>з</left>
