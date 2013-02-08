@@ -159,20 +159,6 @@ public class TranslitDocument {
         if (index > elements.size() || index < 0) {
             throw new TranslitDocumentException("Invalid index " + index);
         }
-        Mutation mutation = leftShift(index, side);
-        removeElements(mutation.getLeftIndex(), mutation.getOldElements().size());
-        mutation.getStringBuffer().append(text);
-        ParsingContext parsingContext = parse(mutation.getStringBuffer().toString(), side);
-        mutation.getNewElements().addAll(parsingContext.elements());
-        mutation.offset = index;
-        if (mutation.getNewElements().size() - 1 < mutation.getOldElements().size()) {
-            mutation.offset = mutation.offset - (mutation.getOldElements().size() - (mutation.getNewElements().size() - 1));
-        }
-        elements.addAll(mutation.getLeftIndex(), mutation.getNewElements());
-        return mutation;
-    }
-
-    private Mutation leftShift(int index, TranslitDictionary.Side side) {
         int longestWord = getDictionary().getLongestWordLen(side);
         Mutation mutation = new Mutation();
         mutation.setLeftIndex(index);
@@ -187,6 +173,15 @@ public class TranslitDocument {
                 mutation.getStringBuffer().insert(0, element.getStringValue(buildingContext));
             }
         }
+        removeElements(mutation.getLeftIndex(), mutation.getOldElements().size());
+        mutation.getStringBuffer().append(text);
+        ParsingContext parsingContext = parse(mutation.getStringBuffer().toString(), side);
+        mutation.getNewElements().addAll(parsingContext.elements());
+        mutation.offset = index;
+        if (mutation.getNewElements().size() - 1 < mutation.getOldElements().size()) {
+            mutation.offset = mutation.offset - (mutation.getOldElements().size() - (mutation.getNewElements().size() - 1));
+        }
+        elements.addAll(mutation.getLeftIndex(), mutation.getNewElements());
         return mutation;
     }
 

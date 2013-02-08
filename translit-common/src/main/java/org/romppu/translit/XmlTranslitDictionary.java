@@ -86,7 +86,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      * @throws TransformerException
      */
     public void save() throws IOException, TransformerException, JAXBException {
-        System.out.println("Saving profile to " + getDocumentPath());
+        System.out.println("Saving dictionary " + getDocumentPath());
         JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
         Marshaller m = jc.createMarshaller();
         FileOutputStream os = new FileOutputStream(getDocumentPath());
