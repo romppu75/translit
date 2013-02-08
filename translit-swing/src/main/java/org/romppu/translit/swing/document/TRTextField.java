@@ -1,7 +1,8 @@
 package org.romppu.translit.swing.document;
 
-import org.romppu.translit.TranslitDictionary;
-import org.romppu.translit.TranslitDocument;
+import org.romppu.translit.dictionary.TranslitDictionary;
+import org.romppu.translit.document.TranslitDocument;
+import org.romppu.translit.document.TranslitDocumentFactory;
 import org.romppu.translit.TranslitDocumentException;
 
 import javax.swing.*;
@@ -77,7 +78,9 @@ public class TRTextField extends JTextField {
                     if (filter.getTranslitDocument() != null) {
                         text = filter.getTranslitDocument().getString(TranslitDictionary.Side.LEFT);
                     }
-                    filter.setTranslitDocument(TranslitDocument.create(getDictionary(), text, TranslitDictionary.Side.LEFT));
+                    TranslitDocument document = TranslitDocumentFactory.newInstance().newTranslitDocument(dictionary);
+                    document.insertAt(0, text, TranslitDictionary.Side.LEFT);
+                    filter.setTranslitDocument(document);
                 } catch (TranslitDocumentException e) {
                     throw new RuntimeException(e);
                 }

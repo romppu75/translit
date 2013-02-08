@@ -1,7 +1,7 @@
 package org.romppu.translit.swing.document;
 
-import org.romppu.translit.TranslitDictionary;
-import org.romppu.translit.TranslitDocument;
+import org.romppu.translit.document.TranslitDocument;
+import org.romppu.translit.dictionary.TranslitDictionary;
 import org.romppu.translit.TranslitDocumentException;
 
 import javax.swing.text.AttributeSet;
@@ -26,7 +26,7 @@ public class TranslitDocumentFilter extends DocumentFilter {
             TranslitDictionary.Side side = isTranslitMode() ? TranslitDictionary.Side.RIGHT : TranslitDictionary.Side.LEFT;
             TranslitDocument.Mutation mutation = translitDocument.insertAt(offset, text, side);
             fb.replace(mutation.getOffset(), length + (offset - mutation.getOffset()),
-                    mutation.lastElement().getStringValue(new TranslitDocument.StringBuildingContext(TranslitDictionary.Side.LEFT)),
+                    mutation.lastNewElement().getStringValue(new TranslitDocument.StringBuildingContext(TranslitDictionary.Side.LEFT)),
                     attrs);
         } catch (TranslitDocumentException e) {
             throw new BadLocationException(text, offset);
@@ -35,6 +35,7 @@ public class TranslitDocumentFilter extends DocumentFilter {
 
     public void remove(FilterBypass fb, int offset, int length) throws
             BadLocationException {
+
         translitDocument.removeElements(offset, length);
         fb.remove(offset, length);
     }

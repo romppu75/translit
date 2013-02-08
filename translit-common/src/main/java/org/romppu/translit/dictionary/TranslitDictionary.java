@@ -1,4 +1,4 @@
-package org.romppu.translit;
+package org.romppu.translit.dictionary;
 
 /**
  * The TranslitDictionary interface is representing a dictionary for transliteration,

@@ -1,14 +1,21 @@
-package org.romppu.translit;
+package org.romppu.translit.document.impl;
+
+import org.romppu.translit.EagerMatchSelectionStrategy;
+import org.romppu.translit.MatchSelectionStrategy;
+import org.romppu.translit.TranslitDocumentException;
+import org.romppu.translit.dictionary.TranslitDictionary;
+import org.romppu.translit.document.TranslitDocument;
 
 import java.text.MessageFormat;
 import java.util.*;
 
 /**
- * The TranslitDocument represents a content. Main goal of this class is a parsing of
- * a specified text with a specified dictionary and its conversion to an internal format of the TranslitDocument.
- * After parsing, the content may be retrieved from the TranslitDocument by the {@link #getString(TranslitDictionary.Side)} method.
+ * Default implementation of {@link TranslitDocument}
+ * The DefaultTranslitDocument represents a content. Main goal of this class is a parsing of
+ * a specified text with a specified dictionary and its conversion to an internal format of the DefaultTranslitDocument.
+ * After parsing, the content may be retrieved from the DefaultTranslitDocument by the {@link #getString(org.romppu.translit.dictionary.TranslitDictionary.Side)} method.
  */
-public class TranslitDocument {
+public class DefaultTranslitDocument extends TranslitDocument {
 
     private static final String ERR_INVALID_DATA_RANGE = "Invalid data range ({0},{1}). Collection rowCount: {2}";
     private static final String ERR_INVALID_DATA_POS = "Invalid position ({0}). Position must be in range [{1}-{2}]";
@@ -19,25 +26,25 @@ public class TranslitDocument {
     private MatchSelectionStrategy matchSelectionStrategy;
 
     /**
-     * Creates a new instance of TranslitDocument with the specified {@see dictionary}
+     * Creates a new instance of DefaultTranslitDocument with the specified {@see dictionary}
      *
      * @param dictionary translit dictionary
      */
-    public TranslitDocument(TranslitDictionary dictionary) {
+    public DefaultTranslitDocument(TranslitDictionary dictionary) {
         this.dictionary = dictionary;
     }
 
     /**
-     * Parses the specified text with specified parameters and creates a new instance of the TranslitDocument.
+     * Parses the specified text with specified parameters and creates a new instance of the DefaultTranslitDocument.
      * The EagerMatchSelectionStrategy will be used as default selection strategy.
      *
      * @param dict translit dictionary
      * @param text to transliteration
      * @param side text will be transliterated from the specified side into an opposite side
-     * @return new instance of TranslitDocument
-     * @throws TranslitDocumentException
+     * @return new instance of DefaultTranslitDocument
+     * @throws org.romppu.translit.TranslitDocumentException
      */
-    public static TranslitDocument create(
+    public static DefaultTranslitDocument create(
             TranslitDictionary dict,
             String text,
             TranslitDictionary.Side side)
@@ -47,22 +54,22 @@ public class TranslitDocument {
 
     /**
      * Parses the specified {@see text} with the specified {@see dictionary} and {@see strategy}
-     * and creates a new instance of the TranslitDocument
+     * and creates a new instance of the DefaultTranslitDocument
      *
      * @param dict     TranslitDictionary
      * @param text     to transliteration
      * @param side     text will be transliterated from the specified side into an opposite side
      * @param strategy match selection strategy
-     * @return new instance of TranslitDocument
+     * @return new instance of DefaultTranslitDocument
      * @throws TranslitDocumentException
      */
-    public static TranslitDocument create(
+    public static DefaultTranslitDocument create(
             TranslitDictionary dict,
             String text,
             TranslitDictionary.Side side,
             MatchSelectionStrategy strategy)
             throws TranslitDocumentException {
-        TranslitDocument doc = new TranslitDocument(dict);
+        DefaultTranslitDocument doc = new DefaultTranslitDocument(dict);
         doc.setMatchSelectionStrategy(strategy);
         ParsingContext parsingContext = doc.parse(text, side);
         doc.elements.addAll(parsingContext.elements());
@@ -147,7 +154,7 @@ public class TranslitDocument {
     /**
      * Inserts the specified {@see text} at the specified {@see index} of the document's elements.
      * The {@see text} will be transliterated from the specified {@see side} into an opposite side.
-     * The {@see index} means an element index, it is not index in a text content. To retrieve the element index by position in the content use {@link #convertToElementIndex(int, org.romppu.translit.TranslitDictionary.Side)} method
+     * The {@see index} means an element index, it is not index in a text content. To retrieve the element index by position in the content use {@link #convertToElementIndex(int, org.romppu.translit.dictionary.TranslitDictionary.Side)} method
      *
      * @param index element index
      * @param text  to insert
@@ -169,19 +176,19 @@ public class TranslitDocument {
                     && elements.get(mutation.getLeftIndex() - 1) instanceof IndexElement) {
                 mutation.setLeftIndex(mutation.getLeftIndex() - 1);
                 Element element = elements.get(mutation.getLeftIndex());
-                mutation.getOldElements().add(0, element);
+                mutation.oldElements().add(0, element);
                 mutation.getStringBuffer().insert(0, element.getStringValue(buildingContext));
             }
         }
-        removeElements(mutation.getLeftIndex(), mutation.getOldElements().size());
+        removeElements(mutation.getLeftIndex(), mutation.oldElements().size());
         mutation.getStringBuffer().append(text);
         ParsingContext parsingContext = parse(mutation.getStringBuffer().toString(), side);
-        mutation.getNewElements().addAll(parsingContext.elements());
-        mutation.offset = index;
-        if (mutation.getNewElements().size() - 1 < mutation.getOldElements().size()) {
-            mutation.offset = mutation.offset - (mutation.getOldElements().size() - (mutation.getNewElements().size() - 1));
+        mutation.newElements().addAll(parsingContext.elements());
+        mutation.setOffset(index);
+        if (mutation.newElements().size() - 1 < mutation.oldElements().size()) {
+            mutation.setOffset(mutation.getOffset() - (mutation.oldElements().size() - (mutation.newElements().size() - 1)));
         }
-        elements.addAll(mutation.getLeftIndex(), mutation.getNewElements());
+        elements.addAll(mutation.getLeftIndex(), mutation.newElements());
         return mutation;
     }
 
@@ -274,9 +281,9 @@ public class TranslitDocument {
 
     private ParsingContext parse(String text, TranslitDictionary.Side side) {
         ParsingContext context = new ParsingContext(text, side);
-        while (context.position < text.length()) {
+        while (context.getPosition() < text.length()) {
             SortedSet matchSet = newSynchronizedSortedSet();
-            String part = text.substring(context.position, text.length());
+            String part = text.substring(context.getPosition(), text.length());
             for (int i = 0; i < dictionary.getSize(); i++) {
                 String dictionaryValue = dictionary.getValueAt(i, side);
                 if (part.startsWith(dictionaryValue)) {
@@ -284,15 +291,14 @@ public class TranslitDocument {
                 }
             }
             if (!matchSet.isEmpty()) {
-                context.indexElementsCount++;
-                context.matchesVector.add(matchSet);
+                context.matches().add(matchSet);
                 Match selectedMatch = getMatchSelectionStrategy().selectMatch(context);
-                context.position += selectedMatch.length();
-                context.elements.add(new IndexElement(selectedMatch.index()));
+                context.setPosition(context.getPosition() + selectedMatch.length());
+                context.elements().add(new IndexElement(selectedMatch.index()));
             } else {
                 String data = String.valueOf(part.charAt(0));
-                context.elements.add(new CharacterElement(data));
-                context.position++;
+                context.elements().add(new CharacterElement(data));
+                context.setPosition(context.getPosition() + 1);
             }
         }
         return context;
@@ -319,167 +325,6 @@ public class TranslitDocument {
         });
     }
 
-    public static class Mutation {
-        private int offset;
-        private ArrayList<Element> oldElements = new ArrayList<Element>();
-        private ArrayList<Element> newElements = new ArrayList<Element>();
-        private final StringBuffer stringBuffer = new StringBuffer(4);
-        private int leftIndex;
-
-        public ArrayList<Element> getOldElements() {
-            return oldElements;
-        }
-
-        protected void setOldElements(ArrayList<Element> oldElements) {
-            this.oldElements = oldElements;
-        }
-
-        public int getLeftIndex() {
-            return leftIndex;
-        }
-
-        protected void setLeftIndex(int leftIndex) {
-            this.leftIndex = leftIndex;
-        }
-
-        public StringBuffer getStringBuffer() {
-            return stringBuffer;
-        }
-
-        public ArrayList<Element> getNewElements() {
-            return newElements;
-        }
-
-        public void setNewElements(ArrayList<Element> newElements) {
-            this.newElements = newElements;
-        }
-
-        public Element lastElement() {
-            return newElements.get(newElements.size() - 1);
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-    }
-
-    public class Match {
-        private int index;
-        private String stringPart;
-
-        private Match(int index, String stringPart) {
-            this.index = index;
-            this.stringPart = stringPart;
-        }
-
-        public int index() {
-            return index;
-        }
-
-        public String getStringPart() {
-            return stringPart;
-        }
-
-        public Integer length() {
-            return stringPart.length();
-        }
-
-        public String toString() {
-            return stringPart + ";idx=" + index;
-        }
-    }
-
-    public class ParsingContext {
-        private TranslitDictionary.Side side;
-        private int indexElementsCount;
-        private String text;
-        private Vector elements = new Vector();
-        private int position;
-        private Vector<SortedSet<Match>> matchesVector = new Vector();
-
-        private ParsingContext(String text, TranslitDictionary.Side side) {
-            this.side = side;
-            this.text = text;
-        }
-
-        public TranslitDocument getDocument() {
-            return TranslitDocument.this;
-        }
-
-        public TranslitDictionary getDictionary() {
-            return TranslitDocument.this.dictionary;
-        }
-
-        public int getPosition() {
-            return position;
-        }
-
-        public TranslitDictionary.Side getSide() {
-            return side;
-        }
-
-        public List<Element> elements() {
-            return elements.subList(0, elements.size());
-        }
-
-        public String getText() {
-            return text;
-        }
-
-        public Vector<SortedSet<Match>> getMatchesVector() {
-            return matchesVector;
-        }
-
-        public SortedSet<Match> getCurrentMatchSet() {
-            return matchesVector.lastElement();
-        }
-    }
-
-    public static class StringBuildingContext {
-
-        final private TranslitDictionary.Side side;
-
-        public StringBuildingContext(TranslitDictionary.Side side) {
-            this.side = side;
-        }
-
-        public TranslitDictionary.Side getSide() {
-            return side;
-        }
-
-    }
-
-    public abstract static class Element {
-        public abstract String getStringValue(StringBuildingContext stringBuildingContext);
-    }
-
-    public class IndexElement extends Element {
-
-        private int index;
-
-        public IndexElement(int index) {
-            this.index = index;
-        }
-
-        @Override
-        public String getStringValue(StringBuildingContext buildingContext) {
-            return getDictionary().getValueAt(index, buildingContext.getSide());
-        }
-    }
-
-    public class CharacterElement extends Element {
-
-        private String data;
-
-        public CharacterElement(String data) {
-            this.data = data;
-        }
-
-        @Override
-        public String getStringValue(StringBuildingContext stringBuildingContext) {
-            return data;
-        }
-    }
 
 
 }

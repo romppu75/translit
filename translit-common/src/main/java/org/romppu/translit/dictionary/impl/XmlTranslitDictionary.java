@@ -1,6 +1,7 @@
-package org.romppu.translit;
+package org.romppu.translit.dictionary.impl;
 
 
+import org.romppu.translit.dictionary.TranslitDictionary;
 import org.romppu.translit.profile.TranslitProfile;
 
 import javax.xml.bind.JAXBContext;
@@ -8,7 +9,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.TransformerException;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -18,8 +18,8 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * Main goal of <code>XmlTranslitDictionary</code> is an implementing of {@link TranslitDictionary}
- * interface which is used by {@link TranslitDocument}
+ * Main goal of <code>XmlTranslitDictionary</code> is an implementing of {@link org.romppu.translit.dictionary.TranslitDictionary}
+ * interface which is used by {@link org.romppu.translit.document.TranslitDocument}
  * The XmlTranslitDictionary deals with xml file which is represented by {@link org.romppu.translit.profile.TranslitProfile}
  */
 public class XmlTranslitDictionary implements TranslitDictionary {
@@ -71,12 +71,12 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      * @throws Exception
      */
     public void load() throws JAXBException {
-        System.out.println("Loading dictionary profile from " + getDocumentPath());
+        System.out.println("Loading dictionary from " + getDocumentPath());
         JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
         Unmarshaller u = jc.createUnmarshaller();
         translitProfile = (TranslitProfile) u.unmarshal(getClass().getResourceAsStream(getDocumentPath()));
         updateLongestWordLen();
-        System.out.println("Dictionary profile version is " + translitProfile.getVersion() + ", done.");
+        System.out.println("Dictionary version is " + translitProfile.getVersion() + ", done.");
     }
 
     /**

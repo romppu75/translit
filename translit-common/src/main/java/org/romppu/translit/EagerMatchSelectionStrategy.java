@@ -1,5 +1,7 @@
 package org.romppu.translit;
 
+import org.romppu.translit.document.TranslitDocument;
+
 import java.util.Iterator;
 
 /**
@@ -14,9 +16,9 @@ public class EagerMatchSelectionStrategy implements MatchSelectionStrategy {
      * @return
      */
     public TranslitDocument.Match selectMatch(TranslitDocument.ParsingContext context) {
-        Iterator<TranslitDocument.Match> iterator = context.getCurrentMatchSet().iterator();
+        Iterator<TranslitDocument.Match> iterator = context.currentMatchSet().iterator();
         int longest = 0;
-        TranslitDocument.Match selection = context.getCurrentMatchSet().first();
+        TranslitDocument.Match selection = context.currentMatchSet().first();
         while (iterator.hasNext()) {
             TranslitDocument.Match match = iterator.next();
             if (match.getStringPart().length() > longest) selection = match;

@@ -1,9 +1,7 @@
-import org.romppu.translit.TranslitDictionaryHolder;
-import org.romppu.translit.TranslitDocument;
+import org.romppu.translit.document.TranslitDocumentFactory;
 import org.romppu.translit.swing.document.TranslitDocumentFilter;
 
 import javax.swing.*;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -40,7 +38,7 @@ public class Transliterator extends JFrame {
                 documentFilter.setTranslitMode(button.isSelected());
             }
         });
-        documentFilter.setTranslitDocument(new TranslitDocument(TranslitDictionaryHolder.getInstance().getDictionary()));
+        documentFilter.setTranslitDocument(TranslitDocumentFactory.newInstance().newTranslitDocument());
         PlainDocument document = new PlainDocument();
         document.setDocumentFilter(documentFilter);
         textArea.setDocument(document);

@@ -1,40 +1,29 @@
 package org.romppu.translit;
 
-import javax.xml.bind.JAXBException;
-import java.text.MessageFormat;
+import org.romppu.translit.dictionary.TranslitDictionary;
+import org.romppu.translit.dictionary.TranslitDictionaryFactory;
 
 /**
+ * Static singleton for holding an instance  of {@link TranslitDictionary]
+ * created by default implementation of {@link TranslitDictionaryFactory}
  * User: roman
  * Date: 7.2.2013
  * Time: 10:00
  */
 public class TranslitDictionaryHolder {
-    private final static String ERR_INITIALIZING = "Cannot load translit dictionary from path {0}. TRANSLIT_DICT system property or environment variable may be specified";
-    private static final String DEFAULT_PATH = "/translitdict_default.xml";
 
-    public static final String TRANSLIT_DICT = "TRANSLIT_DICT";
-    private final XmlTranslitDictionary dictionary;
+    private final TranslitDictionary dictionary;
 
     private TranslitDictionaryHolder() {
-        String translitDictionaryPath = System.getenv(TRANSLIT_DICT);
-        if (translitDictionaryPath == null) {
-            translitDictionaryPath = System.getProperty(TRANSLIT_DICT);
-        }
-        if (translitDictionaryPath == null) {
-            translitDictionaryPath = DEFAULT_PATH;
-        }
-        try {
-            dictionary = new XmlTranslitDictionary(translitDictionaryPath);
-        } catch (JAXBException e) {
-            throw new RuntimeException(MessageFormat.format(ERR_INITIALIZING, translitDictionaryPath));
-        }
+        TranslitDictionaryFactory factory = TranslitDictionaryFactory.newInstance();
+        dictionary = factory.newTranslitDictionary();
     }
 
     public static TranslitDictionaryHolder getInstance() {
         return InstanceHolder.INSTANCE;
     }
 
-    public XmlTranslitDictionary getDictionary() {
+    public TranslitDictionary getDictionary() {
         return dictionary;
     }
 
