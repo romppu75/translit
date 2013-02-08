@@ -162,6 +162,11 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         return translitProfile.getVersion();
     }
 
+    @Override
+    public String getInfoString() {
+        return getDocumentPath();
+    }
+
 
     /**
      * Wrapper of {@link TranslitProfile#setVersion(String)}

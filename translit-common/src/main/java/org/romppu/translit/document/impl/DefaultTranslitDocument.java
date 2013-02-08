@@ -1,7 +1,5 @@
 package org.romppu.translit.document.impl;
 
-import org.romppu.translit.EagerMatchSelectionStrategy;
-import org.romppu.translit.MatchSelectionStrategy;
 import org.romppu.translit.TranslitDocumentException;
 import org.romppu.translit.dictionary.TranslitDictionary;
 import org.romppu.translit.document.TranslitDocument;
@@ -125,6 +123,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
     /**
      * Removes all elements
      */
+    @Override
     public void clear() {
         elements.removeAllElements();
     }
@@ -136,6 +135,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
      * @return transliterated text
      * @throws TranslitDocumentException
      */
+    @Override
     public String getString(TranslitDictionary.Side side) throws TranslitDocumentException {
         return buildString(0, elements.size(), side);
     }
@@ -162,25 +162,26 @@ public class DefaultTranslitDocument extends TranslitDocument {
      * @return result of insert operation
      * @throws TranslitDocumentException
      */
+    @Override
     public Mutation insertAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
         if (index > elements.size() || index < 0) {
             throw new TranslitDocumentException("Invalid index " + index);
         }
         int longestWord = getDictionary().getLongestWordLen(side);
         Mutation mutation = new Mutation();
-        mutation.setLeftIndex(index);
+        mutation.setLeftShift(index);
         if (elements.size() > 0) {
             StringBuildingContext buildingContext = new StringBuildingContext(side);
             while (mutation.getStringBuffer().length() < longestWord
-                    && mutation.getLeftIndex() > 0
-                    && elements.get(mutation.getLeftIndex() - 1) instanceof IndexElement) {
-                mutation.setLeftIndex(mutation.getLeftIndex() - 1);
-                Element element = elements.get(mutation.getLeftIndex());
+                    && mutation.getLeftShift() > 0
+                    && elements.get(mutation.getLeftShift() - 1) instanceof IndexElement) {
+                mutation.setLeftShift(mutation.getLeftShift() - 1);
+                Element element = elements.get(mutation.getLeftShift());
                 mutation.oldElements().add(0, element);
                 mutation.getStringBuffer().insert(0, element.getStringValue(buildingContext));
             }
         }
-        removeElements(mutation.getLeftIndex(), mutation.oldElements().size());
+        removeElements(mutation.getLeftShift(), mutation.oldElements().size());
         mutation.getStringBuffer().append(text);
         ParsingContext parsingContext = parse(mutation.getStringBuffer().toString(), side);
         mutation.newElements().addAll(parsingContext.elements());
@@ -188,7 +189,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
         if (mutation.newElements().size() - 1 < mutation.oldElements().size()) {
             mutation.setOffset(mutation.getOffset() - (mutation.oldElements().size() - (mutation.newElements().size() - 1)));
         }
-        elements.addAll(mutation.getLeftIndex(), mutation.newElements());
+        elements.addAll(mutation.getLeftShift(), mutation.newElements());
         return mutation;
     }
 
@@ -197,6 +198,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
      *
      * @return size of elements in the document
      */
+    @Override
     public int getSize() {
         return elements.size();
     }
@@ -208,6 +210,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
      * @param side     LEFT or RIGHT
      * @return element index
      */
+    @Override
     public int convertToElementIndex(int position, TranslitDictionary.Side side) {
         int currentPosition = 0;
         if (position == 0) return currentPosition;
@@ -228,6 +231,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
      * @param side     LEFT or RIGHT
      * @return element index
      */
+    @Override
     public int convertToTextPosition(int startIndex, int indexToConvert, TranslitDictionary.Side side) {
         int currentPosition = 0;
         StringBuildingContext stringBuildingContext = new StringBuildingContext(side);
@@ -246,6 +250,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
      * @param position removes from
      * @param amount   elements amount
      */
+    @Override
     public void removeElements(int position, int amount) {
         Vector<Element> toRemove = new Vector<Element>();
         for (int i = position; i < position + amount; i++) {
@@ -254,11 +259,17 @@ public class DefaultTranslitDocument extends TranslitDocument {
         elements.removeAll(toRemove);
     }
 
+    @Override
+    public boolean isTranslitAt(int idx) throws TranslitDocumentException {
+        return getElement(idx) instanceof IndexElement;
+    }
+
     /**
      * Returns the dictionary property
      *
      * @return dictionary
      */
+    @Override
     public TranslitDictionary getDictionary() {
         return dictionary;
     }
@@ -323,6 +334,112 @@ public class DefaultTranslitDocument extends TranslitDocument {
                 return ((Match) o1).length().compareTo(((Match) o2).length());
             }
         });
+    }
+
+    public class IndexElement extends Element {
+
+        private int index;
+
+        public IndexElement(int index) {
+            this.index = index;
+        }
+
+        @Override
+        public String getStringValue(StringBuildingContext buildingContext) {
+            return getDictionary().getValueAt(index, buildingContext.getSide());
+        }
+    }
+
+    public class CharacterElement extends Element {
+
+        private String data;
+
+        public CharacterElement(String data) {
+            this.data = data;
+        }
+
+        @Override
+        public String getStringValue(StringBuildingContext stringBuildingContext) {
+            return data;
+        }
+    }
+
+    /**
+     *
+     */
+    public class Match {
+        private int index;
+        private String stringPart;
+
+        public Match(int index, String stringPart) {
+            this.index = index;
+            this.stringPart = stringPart;
+        }
+
+        public int index() {
+            return index;
+        }
+
+        public String getStringPart() {
+            return stringPart;
+        }
+
+        public Integer length() {
+            return stringPart.length();
+        }
+
+        public String toString() {
+            return stringPart + ";idx=" + index;
+        }
+    }
+
+    public class ParsingContext {
+        private TranslitDictionary.Side side;
+        private String text;
+        private Vector elements = new Vector();
+        private int position;
+        private Vector<SortedSet<Match>> matchesVector = new Vector();
+
+        public ParsingContext(String text, TranslitDictionary.Side side) {
+            this.side = side;
+            this.text = text;
+        }
+
+        public TranslitDocument getDocument() {
+            return DefaultTranslitDocument.this;
+        }
+
+        public TranslitDictionary getDictionary() {
+            return DefaultTranslitDocument.this.getDictionary();
+        }
+
+        public int getPosition() {
+            return position;
+        }
+
+        public TranslitDictionary.Side getSide() {
+            return side;
+        }
+
+        public List<Element> elements() {
+            return elements;
+        }
+
+        public String getText() {
+            return text;
+        }
+
+        public Vector<SortedSet<Match>> matches() {
+            return matchesVector;
+        }
+
+        public SortedSet<Match> currentMatchSet() {
+            return matchesVector.lastElement();
+        }
+
+        public void setPosition(int position) {
+            this.position = position;
+        }
     }
 
 

@@ -27,5 +27,5 @@ public abstract class TranslitDictionaryFactory {
     }
 
     public abstract TranslitDictionary newTranslitDictionary();
-
+    public abstract TranslitDictionary newTranslitDictionary(String params);
 }

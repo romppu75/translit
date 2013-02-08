@@ -1,11 +1,19 @@
+import org.romppu.translit.TranslitDocumentException;
+import org.romppu.translit.document.TranslitDocument;
 import org.romppu.translit.document.TranslitDocumentFactory;
 import org.romppu.translit.swing.document.TranslitDocumentFilter;
 
 import javax.swing.*;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import javax.swing.text.PlainDocument;
+import javax.swing.text.Utilities;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.text.MessageFormat;
 
 /**
  * Created with IntelliJ IDEA.
@@ -15,16 +23,29 @@ import java.awt.event.ActionListener;
  * To change this template use File | Settings | File Templates.
  */
 public class Transliterator extends JFrame {
+    private static final String POS_STATUS_STRING_PATTERN = "{0,number,#}:{1,number,#}";
+    private static final String FORMAT_STATUS_STRING_PATTERN = "{0}";
 
-    private JTextArea textArea = new JTextArea();
-    private JToolBar toolBar = new JToolBar();
-    private JToggleButton button = new JToggleButton("Translit mode");
-    private TranslitDocumentFilter documentFilter = new TranslitDocumentFilter();
+    private final JTextArea textArea = new JTextArea();
+    private final JToolBar toolBar = new JToolBar();
+    private final JToggleButton button = new JToggleButton("Translit mode");
+    private final TranslitDocumentFilter documentFilter = new TranslitDocumentFilter();
+    private final TranslitDocument translitDocument = TranslitDocumentFactory.newInstance().newTranslitDocument();
+    private final JLabel formatAtPos = new JLabel();
+    private final JLabel atPos = new JLabel();
+
 
     public Transliterator() {
         super("Transliterator");
         setSize(400, 200);
         setLocationByPlatform(true);
+        textArea.registerKeyboardAction(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                button.doClick();
+            }
+        }, KeyStroke.getKeyStroke("control T"), JComponent.WHEN_IN_FOCUSED_WINDOW);
+
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
         textArea.setLineWrap(true);
@@ -38,10 +59,62 @@ public class Transliterator extends JFrame {
                 documentFilter.setTranslitMode(button.isSelected());
             }
         });
-        documentFilter.setTranslitDocument(TranslitDocumentFactory.newInstance().newTranslitDocument());
+
+        documentFilter.setTranslitDocument(translitDocument);
         PlainDocument document = new PlainDocument();
         document.setDocumentFilter(documentFilter);
+        JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        statusPanel.setBorder(BorderFactory.createEtchedBorder());
+        formatAtPos.setPreferredSize(new Dimension(150, 18));
+        statusPanel.add(atPos);
+        statusPanel.add(new JSeparator());
+        statusPanel.add(formatAtPos);
+        getContentPane().add(statusPanel, BorderLayout.SOUTH);
+        updateStatus(0);
+        textArea.addCaretListener(new CaretListener() {
+            @Override
+            public void caretUpdate(CaretEvent e) {
+                updateStatus(e.getDot());
+
+            }
+        });
         textArea.setDocument(document);
+    }
+
+    public static int getRow(int pos, JTextComponent editor) {
+        int rn = (pos==0) ? 1 : 0;
+        try {
+            int offs=pos;
+            while( offs>0) {
+                offs= Utilities.getRowStart(editor, offs)-1;
+                rn++;
+            }
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        return rn;
+    }
+
+    public static int getColumn(int pos, JTextComponent editor) {
+        try {
+            return pos-Utilities.getRowStart(editor, pos)+1;
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+        return -1;
+    }
+
+    private void updateStatus(int index) {
+        try {
+            atPos.setText(MessageFormat.format(POS_STATUS_STRING_PATTERN, getRow(index, textArea), getColumn(index, textArea)));
+            formatAtPos.setText(MessageFormat.format(FORMAT_STATUS_STRING_PATTERN,
+                    translitDocument.getSize() == 0 || index >= translitDocument.getSize() ? "NONE" :
+                            translitDocument.isTranslitAt(index) ? "TRANSLIT" : "TEXT"));
+
+        } catch (TranslitDocumentException e1) {
+            e1.printStackTrace();
+        }
+
     }
 
     public static void main(String... params) {

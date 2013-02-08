@@ -14,10 +14,7 @@ import java.text.MessageFormat;
 public class XmlTranslitDictionaryFactory extends TranslitDictionaryFactory {
 
     private static final String DEFAULT_PATH = "/translitdict_default.xml";
-    private final static String ERR_INITIALIZING = "Cannot load translit dictionary from path {0}. TRANSLIT_DICT system property or environment variable specified correctly?";
-
-    public XmlTranslitDictionaryFactory() {
-    }
+    private final static String ERR_INITIALIZING = "Cannot load translit dictionary from path {0}";
 
     @Override
     public TranslitDictionary newTranslitDictionary() {
@@ -28,10 +25,15 @@ public class XmlTranslitDictionaryFactory extends TranslitDictionaryFactory {
         if (translitDictionaryPath == null) {
             translitDictionaryPath = DEFAULT_PATH;
         }
+        return newTranslitDictionary(translitDictionaryPath);
+    }
+
+    @Override
+    public TranslitDictionary newTranslitDictionary(String params) {
         try {
-            return new XmlTranslitDictionary(translitDictionaryPath);
+            return new XmlTranslitDictionary(params);
         } catch (JAXBException e) {
-            throw new RuntimeException(MessageFormat.format(ERR_INITIALIZING, translitDictionaryPath));
+            throw new RuntimeException(MessageFormat.format(ERR_INITIALIZING, params));
         }
     }
 }

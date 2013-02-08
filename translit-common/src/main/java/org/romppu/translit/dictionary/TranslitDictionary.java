@@ -43,4 +43,6 @@ public interface TranslitDictionary {
      */
     public String getVersion();
 
+    public String getInfoString();
+
 }
