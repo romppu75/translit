@@ -47,13 +47,17 @@ public interface TranslitDictionary {
 
     public int getLongestWordLen(Side side);
 
+    public String getDescription();
+
+    public void setDescription(String description);
+
     /**
      * Returns version info
      * @return version number in format major.minor
      */
     public String getVersion();
 
-    public String getInfoString();
+    public String getInitialParam();
 
     public void save(OutputStream stream) throws Exception;
 

@@ -132,6 +132,16 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         return longestWordLen.get(side);
     }
 
+    @Override
+    public String getDescription() {
+        return translitProfile.getName();
+    }
+
+    @Override
+    public void setDescription(String description) {
+        translitProfile.setName(description);
+    }
+
     /**
      * Adds new pair to profile
      *
@@ -167,7 +177,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
     }
 
     @Override
-    public String getInfoString() {
+    public String getInitialParam() {
         return getDocumentPath();
     }
 

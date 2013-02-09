@@ -28,12 +28,12 @@ public class XmlTranslitDictionaryFactory extends TranslitDictionaryFactory {
     }
 
     @Override
-    public TranslitDictionary newTranslitDictionary(String params) {
+    public TranslitDictionary newTranslitDictionary(String initialParam) {
         try {
-            return new XmlTranslitDictionary(params);
+            return new XmlTranslitDictionary(initialParam);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new RuntimeException(MessageFormat.format(ERR_INITIALIZING, params));
+            throw new RuntimeException(MessageFormat.format(ERR_INITIALIZING, initialParam));
         }
     }
 }
