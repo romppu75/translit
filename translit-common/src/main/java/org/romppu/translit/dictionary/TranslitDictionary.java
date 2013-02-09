@@ -1,5 +1,9 @@
 package org.romppu.translit.dictionary;
 
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.List;
+
 /**
  * The TranslitDictionary interface is representing a dictionary for transliteration,
  * it defines some useful methods which are providing access to data of the dictionary.
@@ -29,6 +33,12 @@ public interface TranslitDictionary {
      */
     public String getValueAt(int idx, Side side);
 
+    public void addPair(String left, String right);
+
+    public void removeAt(int idx);
+
+    public List<String> getOppositeList(String value, Side side);
+
     /**
      * Returns amount of dictionary words.
       * @return
@@ -45,4 +55,9 @@ public interface TranslitDictionary {
 
     public String getInfoString();
 
+    public void save(OutputStream stream) throws Exception;
+
+    public void load(InputStream stream) throws Exception;
+
+    public String getFilenameExtension();
 }

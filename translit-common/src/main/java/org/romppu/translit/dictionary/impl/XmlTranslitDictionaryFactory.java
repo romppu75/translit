@@ -3,7 +3,6 @@ package org.romppu.translit.dictionary.impl;
 import org.romppu.translit.dictionary.TranslitDictionary;
 import org.romppu.translit.dictionary.TranslitDictionaryFactory;
 
-import javax.xml.bind.JAXBException;
 import java.text.MessageFormat;
 
 /**
@@ -13,7 +12,7 @@ import java.text.MessageFormat;
  */
 public class XmlTranslitDictionaryFactory extends TranslitDictionaryFactory {
 
-    private static final String DEFAULT_PATH = "/translitdict_default.xml";
+    private static final String DEFAULT_PATH = "/dictionary_ru_def.xml";
     private final static String ERR_INITIALIZING = "Cannot load translit dictionary from path {0}";
 
     @Override
@@ -32,7 +31,8 @@ public class XmlTranslitDictionaryFactory extends TranslitDictionaryFactory {
     public TranslitDictionary newTranslitDictionary(String params) {
         try {
             return new XmlTranslitDictionary(params);
-        } catch (JAXBException e) {
+        } catch (Exception e) {
+            e.printStackTrace();
             throw new RuntimeException(MessageFormat.format(ERR_INITIALIZING, params));
         }
     }

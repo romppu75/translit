@@ -1,4 +1,5 @@
 import org.romppu.translit.TranslitDocumentException;
+import org.romppu.translit.dictionary.TranslitDictionaryFactory;
 import org.romppu.translit.document.TranslitDocument;
 import org.romppu.translit.document.TranslitDocumentFactory;
 import org.romppu.translit.swing.document.TranslitDocumentFilter;
@@ -38,6 +39,7 @@ public class Transliterator extends JFrame {
     public Transliterator() {
         super("Transliterator");
         setSize(400, 200);
+
         setLocationByPlatform(true);
         textArea.registerKeyboardAction(new ActionListener() {
             @Override
@@ -118,6 +120,7 @@ public class Transliterator extends JFrame {
     }
 
     public static void main(String... params) {
+        System.setProperty(TranslitDictionaryFactory.TRANSLIT_DICT, "F:\\User\\roman\\translit_dictionary_ru.xml");
         new Transliterator().setVisible(true);
     }
 }

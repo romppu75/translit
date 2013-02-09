@@ -9,13 +9,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.TransformerException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.*;
 import java.nio.charset.Charset;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Main goal of <code>XmlTranslitDictionary</code> is an implementing of {@link org.romppu.translit.dictionary.TranslitDictionary}
@@ -40,7 +36,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      * @param documentPath
      * @throws JAXBException
      */
-    public XmlTranslitDictionary(String documentPath) throws JAXBException {
+    public XmlTranslitDictionary(String documentPath) throws Exception {
         this();
         setDocumentPath(documentPath);
         load();
@@ -70,12 +66,13 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      *
      * @throws Exception
      */
-    public void load() throws JAXBException {
+    public void load() throws Exception {
         System.out.println("Loading dictionary from " + getDocumentPath());
-        JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
-        Unmarshaller u = jc.createUnmarshaller();
-        translitProfile = (TranslitProfile) u.unmarshal(getClass().getResourceAsStream(getDocumentPath()));
-        updateLongestWordLen();
+        InputStream stream = getClass().getResourceAsStream(getDocumentPath());
+        if (stream == null) {
+            stream = new FileInputStream(getDocumentPath());
+        }
+        load(stream);
         System.out.println("Dictionary version is " + translitProfile.getVersion() + ", done.");
     }
 
@@ -85,12 +82,9 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      * @throws IOException
      * @throws TransformerException
      */
-    public void save() throws IOException, TransformerException, JAXBException {
+    public void save() throws Exception {
         System.out.println("Saving dictionary " + getDocumentPath());
-        JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
-        Marshaller m = jc.createMarshaller();
-        FileOutputStream os = new FileOutputStream(getDocumentPath());
-        m.marshal(translitProfile, new OutputStreamWriter(os, Charset.forName("UTF8")));
+        save(new FileOutputStream(getDocumentPath()));
     }
 
     /**
@@ -100,13 +94,13 @@ public class XmlTranslitDictionary implements TranslitDictionary {
      * @param value
      * @return
      */
-    public Vector<TranslitProfile.Pair> findOpposites(String value, Side side) {
-        Vector<TranslitProfile.Pair> toReturn = new Vector<TranslitProfile.Pair>();
+    public List<String> findOpposites(String value, Side side) {
+        ArrayList<String> toReturn = new ArrayList<String>();
         for (TranslitProfile.Pair pair : translitProfile.getPair()) {
             if (side == Side.LEFT && value.equals(pair.getLeft())) {
-                toReturn.add(pair);
+                toReturn.add(value);
             } else if (side == Side.RIGHT && value.equals(pair.getRight())) {
-                toReturn.add(pair);
+                toReturn.add(value);
             }
         }
         return toReturn;
@@ -152,6 +146,16 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         updateLongestWordLen();
     }
 
+    @Override
+    public void removeAt(int idx) {
+        translitProfile.getPair().remove(idx);
+    }
+
+    @Override
+    public List<String> getOppositeList(String value, Side side) {
+        return findOpposites(value, side);
+    }
+
     /**
      * Wrapper of {@link org.romppu.translit.profile.TranslitProfile#getVersion()}
      *
@@ -167,6 +171,25 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         return getDocumentPath();
     }
 
+    @Override
+    public void save(OutputStream stream) throws Exception {
+        JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
+        Marshaller m = jc.createMarshaller();
+        m.marshal(translitProfile, new OutputStreamWriter(stream, Charset.forName("UTF8")));
+    }
+
+    @Override
+    public void load(InputStream stream) throws Exception {
+        JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
+        Unmarshaller u = jc.createUnmarshaller();
+        translitProfile = (TranslitProfile) u.unmarshal(stream);
+        updateLongestWordLen();
+    }
+
+    @Override
+    public String getFilenameExtension() {
+        return ".xml";
+    }
 
     /**
      * Wrapper of {@link TranslitProfile#setVersion(String)}
