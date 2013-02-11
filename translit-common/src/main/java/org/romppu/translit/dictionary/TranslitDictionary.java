@@ -46,10 +46,25 @@ public interface TranslitDictionary {
      */
     public String getValueAt(int idx, Side side);
 
+    /**
+     * Adds new pair (right=left) to the dictionary
+     * @param left
+     * @param right
+     */
     public void addPair(String left, String right);
 
-    public void removeAt(int idx);
+    /**
+     * Removes pair at the specified index
+     * @param index
+     */
+    public void removeAt(int index );
 
+    /**
+     * Gets list of opposites values of the specified value on the specified side
+     * @param value
+     * @param side
+     * @return
+     */
     public List<String> getOppositeList(String value, Side side);
 
     /**
@@ -58,10 +73,23 @@ public interface TranslitDictionary {
      */
     public int getSize();
 
+    /**
+     * Gets longest word on the specified side
+     * @param side
+     * @return
+     */
     public int getLongestWordLen(Side side);
 
+    /**
+     * Gets description string of the dictionary
+     * @return
+     */
     public String getDescription();
 
+    /**
+     * Sets description string
+     * @param description
+     */
     public void setDescription(String description);
 
     /**
