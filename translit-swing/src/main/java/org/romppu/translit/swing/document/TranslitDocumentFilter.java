@@ -73,6 +73,26 @@ public class TranslitDocumentFilter extends DocumentFilter {
         changeSupport.firePropertyChange("translitMode", old, translitMode);
     }
 
+    public Color getTranslitForeground() {
+        return translitForeground;
+    }
+
+    public void setTranslitForeground(Color translitForeground) {
+        Color old = getTranslitForeground();
+        this.translitForeground = translitForeground;
+        changeSupport.firePropertyChange("translitForeground", old, translitForeground);
+    }
+
+    public Color getTextForeground() {
+        return textForeground;
+    }
+
+    public void setTextForeground(Color textForeground) {
+        Color old = getTextForeground();
+        this.textForeground = textForeground;
+        changeSupport.firePropertyChange("textForeground", old, textForeground);
+    }
+
     public void addPropertyChangeListener(String prop, PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(prop, listener);
     }
@@ -81,19 +101,4 @@ public class TranslitDocumentFilter extends DocumentFilter {
         changeSupport.removePropertyChangeListener(prop, listener);
     }
 
-    public Color getTranslitForeground() {
-        return translitForeground;
-    }
-
-    public void setTranslitForeground(Color translitForeground) {
-        this.translitForeground = translitForeground;
-    }
-
-    public Color getTextForeground() {
-        return textForeground;
-    }
-
-    public void setTextForeground(Color textForeground) {
-        this.textForeground = textForeground;
-    }
 }
