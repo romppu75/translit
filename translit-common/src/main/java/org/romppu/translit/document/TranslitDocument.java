@@ -22,9 +22,18 @@ public abstract class TranslitDocument {
     public abstract String getString(TranslitDictionary.Side side) throws TranslitDocumentException;
 
     /**
+     * Sets document content from the specified string. String will no be transliterated, but it will be recognized as
+     * transliterated content.
+     * @param side
+     * @param string
+     * @throws TranslitDocumentException
+     */
+    public abstract void setString(String string, TranslitDictionary.Side side) throws TranslitDocumentException;
+
+    /**
      * Returns document content as string with exclusion markers
      *
-     * @param side text will be transliterated from the specified side into an opposite side
+     * @param side document content will be returned as transliterated string from the specified side into an opposite side
      * @return transliterated text
      * @throws TranslitDocumentException
      */

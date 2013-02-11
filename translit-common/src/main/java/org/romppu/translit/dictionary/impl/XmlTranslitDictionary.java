@@ -106,6 +106,15 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         return toReturn;
     }
 
+    @Override
+    public int indexOf(String string, Side side) {
+        for (int i = 0; i < translitProfile.getPair().size(); i++) {
+            String value = getValueAt(i, side);
+            if (value.equals(string)) return i;
+        }
+        return -1;
+    }
+
     /**
      * Returns value at the specified position from the specified side
      *

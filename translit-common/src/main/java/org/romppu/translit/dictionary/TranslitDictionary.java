@@ -31,6 +31,14 @@ public interface TranslitDictionary {
     }
 
     /**
+     * Returns index of the specified string at the specified side. -1 will be returned if string doesn't exist in the dictionary.
+     * @param string
+     * @param side
+     * @return
+     */
+    public int indexOf(String string, Side side);
+
+    /**
      * Returns word at the specified index from the specified {@link Side}
      * @param idx
      * @param side

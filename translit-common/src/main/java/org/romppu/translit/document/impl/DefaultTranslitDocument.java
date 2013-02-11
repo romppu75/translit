@@ -140,6 +140,26 @@ public class DefaultTranslitDocument extends TranslitDocument {
         return buildString(0, elements.size(), side);
     }
 
+    @Override
+    public void setString(String string, TranslitDictionary.Side side) throws TranslitDocumentException {
+        clear();
+        for (Character ch: string.toCharArray()) {
+            String str = ch.toString();
+            if (dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.START).equals(str)) {
+                elements.add(new ExclusionMarkerElement(TranslitDictionary.ExclusionMarker.START));
+            } if (dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.END).equals(str)) {
+                elements.add(new ExclusionMarkerElement(TranslitDictionary.ExclusionMarker.END));
+            } else {
+                int idx = dictionary.indexOf(ch.toString(), side);
+                if (idx != -1) {
+                    elements.add(new IndexElement(idx));
+                } else {
+                    elements.add(new CharacterElement(str));
+                }
+            }
+        }
+    }
+
     /**
      * Returns document content as string with exclusion markers.
      * @param side text will be transliterated from the specified side into an opposite side
