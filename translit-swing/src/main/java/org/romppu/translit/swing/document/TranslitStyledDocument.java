@@ -1,18 +1,23 @@
 package org.romppu.translit.swing.document;
 
-import org.romppu.translit.document.TranslitDocument;
-import org.romppu.translit.dictionary.TranslitDictionary;
 import org.romppu.translit.TranslitDocumentException;
+import org.romppu.translit.dictionary.TranslitDictionary;
+import org.romppu.translit.document.TranslitDocument;
 
+import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 
 /**
- * @author RP
+ * Created with IntelliJ IDEA.
+ * User: roman
+ * Date: 11.2.2013
+ * Time: 19:05
+ * To change this template use File | Settings | File Templates.
  */
-public class TranslitDocumentFilter extends DocumentFilter {
+public class TranslitStyledDocument extends DefaultStyledDocument {
 
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private TranslitDocument translitDocument;
@@ -20,37 +25,30 @@ public class TranslitDocumentFilter extends DocumentFilter {
     private Color translitForeground;
     private Color textForeground;
 
-    public TranslitDocumentFilter() {
+    public void remove(int offs, int len) throws BadLocationException {
+        translitDocument.removeElements(offs, len);
+        super.remove(offs, len);
     }
 
-    public TranslitDocumentFilter(TranslitDocument translitDocument) {
-        this.translitDocument = translitDocument;
-    }
-
-    @Override
-    public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
-            throws BadLocationException {
+    public void insertString(int offset, String str, AttributeSet attrs) throws BadLocationException {
         try {
             TranslitDictionary.Side side = isTranslitMode() ? TranslitDictionary.Side.RIGHT : TranslitDictionary.Side.LEFT;
-            TranslitDocument.Mutation mutation = translitDocument.insertAt(offset, text, side);
+            TranslitDocument.Mutation mutation = getTranslitDocument().insertAt(offset, str, side);
+            int removed = (offset - mutation.getOffset());
+            if (removed > 0) {
+                super.remove(mutation.getOffset(), removed);
+            }
             if (!mutation.lastNewElement().isTransliteration()) {
                 StyleConstants.setForeground((MutableAttributeSet)attrs, getTextForeground());
             } else {
                 StyleConstants.setForeground((MutableAttributeSet)attrs, getTranslitForeground());
             }
-            fb.replace(mutation.getOffset(), length + (offset - mutation.getOffset()),
+            super.insertString(mutation.getOffset(),
                     mutation.lastNewElement().getStringValue(new TranslitDocument.StringBuildingContext(TranslitDictionary.Side.LEFT)),
                     attrs);
         } catch (TranslitDocumentException e) {
-            throw new BadLocationException(text, offset);
+            throw new BadLocationException(str, offset);
         }
-    }
-
-    public void remove(FilterBypass fb, int offset, int length) throws
-            BadLocationException {
-
-        translitDocument.removeElements(offset, length);
-        fb.remove(offset, length);
     }
 
     public TranslitDocument getTranslitDocument() {

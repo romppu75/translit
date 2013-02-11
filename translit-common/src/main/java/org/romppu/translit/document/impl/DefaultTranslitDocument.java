@@ -398,6 +398,11 @@ public class DefaultTranslitDocument extends TranslitDocument {
         public String getStringValue(StringBuildingContext buildingContext) {
             return getDictionary().getValueAt(index, buildingContext.getSide());
         }
+
+        @Override
+        public boolean isTransliteration() {
+            return true;
+        }
     }
 
     public class CharacterElement extends Element {
@@ -411,6 +416,11 @@ public class DefaultTranslitDocument extends TranslitDocument {
         @Override
         public String getStringValue(StringBuildingContext stringBuildingContext) {
             return data;
+        }
+
+        @Override
+        public boolean isTransliteration() {
+            return false;
         }
     }
 
@@ -426,6 +436,11 @@ public class DefaultTranslitDocument extends TranslitDocument {
         public String getStringValue(StringBuildingContext stringBuildingContext) {
             return !stringBuildingContext.isMarkersShowed() ? "" : dictionary.getExclusionMarker(exclusionMarker);
 
+        }
+
+        @Override
+        public boolean isTransliteration() {
+            return false;
         }
     }
 

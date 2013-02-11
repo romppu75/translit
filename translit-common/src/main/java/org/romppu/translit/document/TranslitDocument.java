@@ -191,6 +191,7 @@ public abstract class TranslitDocument {
 
     public abstract static class Element {
         public abstract String getStringValue(StringBuildingContext stringBuildingContext);
+        public abstract boolean isTransliteration();
     }
 
 
