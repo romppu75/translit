@@ -4,6 +4,7 @@ import org.romppu.translit.TranslitDocumentException;
 import org.romppu.translit.dictionary.TranslitDictionary;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * User: roman
@@ -21,6 +22,14 @@ public abstract class TranslitDocument {
      */
     public abstract String getString(TranslitDictionary.Side side) throws TranslitDocumentException;
 
+    /**
+     * Build and returns string from the specified elementList
+     * @param elementList
+     * @param side
+     * @return
+     * @throws TranslitDocumentException
+     */
+    public abstract String getString(List<Element> elementList, TranslitDictionary.Side side) throws TranslitDocumentException;
     /**
      * Sets document content from the specified string. String will no be transliterated, but it will be recognized as
      * transliterated content.

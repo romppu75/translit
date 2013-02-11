@@ -183,7 +183,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
     }
 
     /**
-     * Inserts the specified {@see text} at the specified {@see index} of the document's elements.
+     * Inserts the specified {@see text} into the elements list at the specified {@see index}.
      * The {@see text} will be transliterated from the specified {@see side} into an opposite side.
      * The {@see index} means an element index, it is not index in a text content. To retrieve the element index by position in the content use {@link #convertToElementIndex(int, org.romppu.translit.dictionary.TranslitDictionary.Side)} method
      *

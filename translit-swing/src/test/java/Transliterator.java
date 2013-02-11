@@ -3,15 +3,11 @@ import org.romppu.translit.dictionary.TranslitDictionaryFactory;
 import org.romppu.translit.document.TranslitDocument;
 import org.romppu.translit.document.TranslitDocumentFactory;
 import org.romppu.translit.swing.document.TranslitDocumentFilter;
-import org.romppu.translit.swing.document.TranslitStyledDocument;
 
 import javax.swing.*;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-import javax.swing.text.PlainDocument;
-import javax.swing.text.Utilities;
+import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,9 +24,10 @@ public class Transliterator extends JFrame {
     private static final String POS_STATUS_STRING_PATTERN = "{0,number,#}:{1,number,#}";
     private static final String FORMAT_STATUS_STRING_PATTERN = "{0}";
 
-    private final JTextPane textArea = new JTextPane();
+    private final JTextArea textArea = new JTextArea();
     private final JToolBar toolBar = new JToolBar();
     private final JToggleButton button = new JToggleButton("Translit mode");
+    private final TranslitDocumentFilter documentFilter = new TranslitDocumentFilter();
     private final TranslitDocument translitDocument = TranslitDocumentFactory.newInstance().newTranslitDocument();
     private final JLabel formatAtPos = new JLabel();
     private final JLabel atPos = new JLabel();
@@ -38,6 +35,9 @@ public class Transliterator extends JFrame {
 
     public Transliterator() {
         super("Transliterator");
+        documentFilter.setTranslitDocument(translitDocument);
+        documentFilter.setTranslitForeground(Color.black);
+        documentFilter.setTextForeground(Color.gray);
         setSize(400, 200);
 
         setLocationByPlatform(true);
@@ -50,18 +50,19 @@ public class Transliterator extends JFrame {
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
+        textArea.setLineWrap(true);
+        textArea.setWrapStyleWord(true);
         getContentPane().add(new JScrollPane(textArea), BorderLayout.CENTER);
         toolBar.add(button);
         getContentPane().add(toolBar, BorderLayout.NORTH);
-        final TranslitStyledDocument document = new TranslitStyledDocument();
-        document.setTranslitForeground(Color.black);
-        document.setTextForeground(Color.gray);
         button.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                document.setTranslitMode(button.isSelected());
+                documentFilter.setTranslitMode(button.isSelected());
             }
         });
+
+        ((AbstractDocument)textArea.getDocument()).setDocumentFilter(documentFilter);
 
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         statusPanel.setBorder(BorderFactory.createEtchedBorder());
@@ -78,9 +79,8 @@ public class Transliterator extends JFrame {
 
             }
         });
-        document.setTranslitDocument(translitDocument);
 
-        textArea.setDocument(document);
+
     }
 
     public static int getRow(int pos, JTextComponent editor) {

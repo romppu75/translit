@@ -17,14 +17,15 @@ public class TranslitDocumentFilter extends DocumentFilter {
     private PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private TranslitDocument translitDocument;
     private boolean translitMode;
-    private Color translitForeground;
-    private Color textForeground;
+    private Color translitForeground = Color.black;
+    private Color textForeground = Color.gray;
 
     public TranslitDocumentFilter() {
     }
 
     public TranslitDocumentFilter(TranslitDocument translitDocument) {
         this.translitDocument = translitDocument;
+
     }
 
     @Override
@@ -33,14 +34,16 @@ public class TranslitDocumentFilter extends DocumentFilter {
         try {
             TranslitDictionary.Side side = isTranslitMode() ? TranslitDictionary.Side.RIGHT : TranslitDictionary.Side.LEFT;
             TranslitDocument.Mutation mutation = translitDocument.insertAt(offset, text, side);
-            if (!mutation.lastNewElement().isTransliteration()) {
-                StyleConstants.setForeground((MutableAttributeSet)attrs, getTextForeground());
-            } else {
-                StyleConstants.setForeground((MutableAttributeSet)attrs, getTranslitForeground());
+            if (attrs != null) {
+                if (!mutation.lastNewElement().isTransliteration()) {
+                    StyleConstants.setForeground((MutableAttributeSet) attrs, getTextForeground());
+                } else {
+                    StyleConstants.setForeground((MutableAttributeSet) attrs, getTranslitForeground());
+                }
             }
-            fb.replace(mutation.getOffset(), length + (offset - mutation.getOffset()),
-                    mutation.lastNewElement().getStringValue(new TranslitDocument.StringBuildingContext(TranslitDictionary.Side.LEFT)),
-                    attrs);
+            String newString = translitDocument.getString(mutation.newElements(), TranslitDictionary.Side.LEFT);
+            int correction = newString.length() - text.length();
+            fb.replace(mutation.getOffset() - correction, correction + (offset - mutation.getOffset()), newString, attrs);
         } catch (TranslitDocumentException e) {
             throw new BadLocationException(text, offset);
         }
