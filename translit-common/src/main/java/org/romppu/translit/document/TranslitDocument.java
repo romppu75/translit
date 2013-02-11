@@ -4,9 +4,6 @@ import org.romppu.translit.TranslitDocumentException;
 import org.romppu.translit.dictionary.TranslitDictionary;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.SortedSet;
-import java.util.Vector;
 
 /**
  * User: roman
@@ -23,6 +20,15 @@ public abstract class TranslitDocument {
      * @throws TranslitDocumentException
      */
     public abstract String getString(TranslitDictionary.Side side) throws TranslitDocumentException;
+
+    /**
+     * Returns document content as string with exclusion markers
+     *
+     * @param side text will be transliterated from the specified side into an opposite side
+     * @return transliterated text
+     * @throws TranslitDocumentException
+     */
+    public abstract String getMarkedString(TranslitDictionary.Side side) throws TranslitDocumentException;
 
     /**
      * Returns the element at the specified position
@@ -153,15 +159,25 @@ public abstract class TranslitDocument {
     public static class StringBuildingContext {
 
         final private TranslitDictionary.Side side;
+        final private boolean markersShowed;
 
         public StringBuildingContext(TranslitDictionary.Side side) {
             this.side = side;
+            this.markersShowed = false;
+        }
+
+        public StringBuildingContext(TranslitDictionary.Side side, boolean markersShowed) {
+            this.side = side;
+            this.markersShowed = markersShowed;
         }
 
         public TranslitDictionary.Side getSide() {
             return side;
         }
 
+        public boolean isMarkersShowed() {
+            return markersShowed;
+        }
     }
 
     public abstract static class Element {

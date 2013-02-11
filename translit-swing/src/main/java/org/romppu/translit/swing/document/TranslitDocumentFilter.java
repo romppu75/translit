@@ -19,6 +19,13 @@ public class TranslitDocumentFilter extends DocumentFilter {
     private TranslitDocument translitDocument;
     private boolean translitMode;
 
+    public TranslitDocumentFilter() {
+    }
+
+    public TranslitDocumentFilter(TranslitDocument translitDocument) {
+        this.translitDocument = translitDocument;
+    }
+
     @Override
     public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
             throws BadLocationException {

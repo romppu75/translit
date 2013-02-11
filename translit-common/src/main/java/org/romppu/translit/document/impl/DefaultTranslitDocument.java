@@ -141,6 +141,17 @@ public class DefaultTranslitDocument extends TranslitDocument {
     }
 
     /**
+     * Returns document content as string with exclusion markers.
+     * @param side text will be transliterated from the specified side into an opposite side
+     * @return
+     * @throws TranslitDocumentException
+     */
+    @Override
+    public String getMarkedString(TranslitDictionary.Side side) throws TranslitDocumentException {
+        return buildString(elements, side, true);
+    }
+
+    /**
      * Returns elements as string
      * @param elementList to process
      * @param side text will be transliterated from the specified side into an opposite side
@@ -148,7 +159,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
      * @throws TranslitDocumentException
      */
     public String getString(List<Element> elementList, TranslitDictionary.Side side) throws TranslitDocumentException {
-        return buildString(elementList, side);
+        return buildString(elementList, side, false);
     }
 
     /**
@@ -274,20 +285,33 @@ public class DefaultTranslitDocument extends TranslitDocument {
         return dictionary;
     }
 
-    private String buildString(List<Element> list, TranslitDictionary.Side side) throws TranslitDocumentException {
+    private String buildString(List<Element> list, TranslitDictionary.Side side, boolean addMarkers) throws TranslitDocumentException {
         StringBuildingContext stringBuildingContext = new StringBuildingContext(side);
         StringBuffer stringBuffer = new StringBuffer();
+        boolean startMarker = false;
         for (Iterator<Element> i = list.iterator(); i.hasNext(); ) {
             Element e = i.next();
             String newChar = e.getStringValue(stringBuildingContext);
+            if (addMarkers && !newChar.isEmpty() && Character.isAlphabetic(newChar.charAt(0))) {
+                if (e instanceof CharacterElement && !startMarker) {
+                    startMarker = true;
+                    stringBuffer.append(dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.START));
+                } else if (!(e instanceof CharacterElement) && startMarker) {
+                    startMarker = false;
+                    stringBuffer.append(dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.END));
+                }
+            }
             stringBuffer.append(newChar);
+        }
+        if (startMarker) {
+            stringBuffer.append(dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.END));
         }
         return stringBuffer.toString();
     }
 
     protected String buildString(int start, int end, TranslitDictionary.Side side) throws TranslitDocumentException {
         //validateElementsRange(start, end);
-        return buildString(elements.subList(start, end), side);
+        return buildString(elements.subList(start, end), side, false);
     }
 
     private ParsingContext parse(String text, TranslitDictionary.Side side) {
@@ -308,7 +332,13 @@ public class DefaultTranslitDocument extends TranslitDocument {
                 context.elements().add(new IndexElement(selectedMatch.index()));
             } else {
                 String data = String.valueOf(part.charAt(0));
-                context.elements().add(new CharacterElement(data));
+                if (data.equals(dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.START))) {
+                    context.elements().add(new ExclusionMarkerElement(TranslitDictionary.ExclusionMarker.START));
+                } else if (data.equals(dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.END))) {
+                    context.elements().add(new ExclusionMarkerElement(TranslitDictionary.ExclusionMarker.END));
+                } else {
+                    context.elements().add(new CharacterElement(data));
+                }
                 context.setPosition(context.getPosition() + 1);
             }
         }
@@ -361,6 +391,21 @@ public class DefaultTranslitDocument extends TranslitDocument {
         @Override
         public String getStringValue(StringBuildingContext stringBuildingContext) {
             return data;
+        }
+    }
+
+    public class ExclusionMarkerElement extends Element {
+
+        private final TranslitDictionary.ExclusionMarker exclusionMarker;
+
+        public ExclusionMarkerElement(TranslitDictionary.ExclusionMarker exclusionMarker) {
+            this.exclusionMarker = exclusionMarker;
+        }
+
+        @Override
+        public String getStringValue(StringBuildingContext stringBuildingContext) {
+            return !stringBuildingContext.isMarkersShowed() ? "" : dictionary.getExclusionMarker(exclusionMarker);
+
         }
     }
 

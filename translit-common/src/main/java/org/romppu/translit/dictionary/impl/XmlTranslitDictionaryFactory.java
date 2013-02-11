@@ -12,7 +12,7 @@ import java.text.MessageFormat;
  */
 public class XmlTranslitDictionaryFactory extends TranslitDictionaryFactory {
 
-    private static final String DEFAULT_PATH = "/dictionary_ru_def.xml";
+    private static final String DEFAULT_PATH = "/dictionary_def.xml";
     private final static String ERR_INITIALIZING = "Cannot load translit dictionary from path {0}";
 
     @Override

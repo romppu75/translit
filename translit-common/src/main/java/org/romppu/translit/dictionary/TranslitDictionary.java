@@ -25,6 +25,11 @@ public interface TranslitDictionary {
         }
     }
 
+    public enum ExclusionMarker {
+        START,
+        END;
+    }
+
     /**
      * Returns word at the specified index from the specified {@link Side}
      * @param idx
@@ -64,4 +69,6 @@ public interface TranslitDictionary {
     public void load(InputStream stream) throws Exception;
 
     public String getFilenameExtension();
+
+    public String getExclusionMarker(ExclusionMarker exclusionMarker);
 }

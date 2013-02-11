@@ -120,7 +120,7 @@ public class Transliterator extends JFrame {
     }
 
     public static void main(String... params) {
-        System.setProperty(TranslitDictionaryFactory.TRANSLIT_DICT, "F:\\User\\roman\\translit_dictionary_ru.xml");
+        //System.setProperty(TranslitDictionaryFactory.TRANSLIT_DICT, "dictionary_def.xml");
         new Transliterator().setVisible(true);
     }
 }

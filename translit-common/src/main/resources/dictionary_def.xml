@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<TranslitProfile rightDescription="latin" leftDescription="cyrillic" version="2.0" name="latin-cyrillic (ru)">
+<TranslitProfile version="2.1"
+                 name="latin-cyrillic (ru,uk)"
+                 exclusionMarkerStart="["
+                 exclusionMarkerEnd="]"
+                 rightDescription="latin"
+                 leftDescription="cyrillic">
     <pair>
         <left>а</left>
         <right>a</right>

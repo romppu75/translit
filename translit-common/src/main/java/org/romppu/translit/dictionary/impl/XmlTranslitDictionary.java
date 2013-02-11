@@ -201,6 +201,15 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         return ".xml";
     }
 
+    @Override
+    public String getExclusionMarker(ExclusionMarker exclusionMarker) {
+        switch (exclusionMarker) {
+            case START: return translitProfile.getExclusionMarkerStart();
+            case END: return translitProfile.getExclusionMarkerEnd();
+            default: throw new RuntimeException("Invalid exclusionMarker " + exclusionMarker);
+        }
+    }
+
     /**
      * Wrapper of {@link TranslitProfile#setVersion(String)}
      *
