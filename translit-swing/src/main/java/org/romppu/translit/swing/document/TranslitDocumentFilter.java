@@ -34,18 +34,31 @@ public class TranslitDocumentFilter extends DocumentFilter {
         try {
             TranslitDictionary.Side side = isTranslitMode() ? TranslitDictionary.Side.RIGHT : TranslitDictionary.Side.LEFT;
             TranslitDocument.Mutation mutation = translitDocument.insertAt(offset, text, side);
-            if (attrs != null) {
-                if (!mutation.lastNewElement().isTransliteration()) {
-                    StyleConstants.setForeground((MutableAttributeSet) attrs, getTextForeground());
-                } else {
-                    StyleConstants.setForeground((MutableAttributeSet) attrs, getTranslitForeground());
-                }
-            }
             String newString = translitDocument.getString(mutation.newElements(), TranslitDictionary.Side.LEFT);
             int correction = newString.length() - text.length();
-            fb.replace(mutation.getOffset() - correction, correction + (offset - mutation.getOffset()), newString, attrs);
+            int startPos = mutation.getOffset() - correction;
+            int len = correction + (offset - mutation.getOffset());
+            fb.replace(startPos, len, newString, attrs);
+            if (fb.getDocument() instanceof StyledDocument) {
+                resetAttributes(startPos, len, (StyledDocument) fb.getDocument());
+            }
         } catch (TranslitDocumentException e) {
             throw new BadLocationException(text, offset);
+        }
+    }
+
+    public void resetAttributes(StyledDocument document) throws TranslitDocumentException {
+       resetAttributes(0, translitDocument.getSize() - 1, document);
+    }
+
+    public void resetAttributes(int offset, int len, StyledDocument document) throws TranslitDocumentException {
+        SimpleAttributeSet textAttrs = new SimpleAttributeSet();
+        StyleConstants.setForeground(textAttrs, getTextForeground());
+        SimpleAttributeSet translitAttrs = new SimpleAttributeSet();
+        StyleConstants.setForeground(translitAttrs, getTranslitForeground());
+        for (int i = offset; i < offset + len + 1; i++) {
+            TranslitDocument.Element element = translitDocument.getElement(i);
+            document.setCharacterAttributes(i, 1, element.isTransliteration()?translitAttrs:textAttrs, true);
         }
     }
 

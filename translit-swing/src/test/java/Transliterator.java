@@ -24,7 +24,7 @@ public class Transliterator extends JFrame {
     private static final String POS_STATUS_STRING_PATTERN = "{0,number,#}:{1,number,#}";
     private static final String FORMAT_STATUS_STRING_PATTERN = "{0}";
 
-    private final JTextArea textArea = new JTextArea();
+    private final JTextPane textArea = new JTextPane();
     private final JToolBar toolBar = new JToolBar();
     private final JToggleButton button = new JToggleButton("Translit mode");
     private final TranslitDocumentFilter documentFilter = new TranslitDocumentFilter();
@@ -50,8 +50,7 @@ public class Transliterator extends JFrame {
 
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new BorderLayout());
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
+
         getContentPane().add(new JScrollPane(textArea), BorderLayout.CENTER);
         toolBar.add(button);
         getContentPane().add(toolBar, BorderLayout.NORTH);
@@ -61,8 +60,9 @@ public class Transliterator extends JFrame {
                 documentFilter.setTranslitMode(button.isSelected());
             }
         });
-
-        ((AbstractDocument)textArea.getDocument()).setDocumentFilter(documentFilter);
+        DefaultStyledDocument defaultStyledDocument = new DefaultStyledDocument();
+        defaultStyledDocument.setDocumentFilter(documentFilter);
+        textArea.setDocument(defaultStyledDocument);
 
         JPanel statusPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
         statusPanel.setBorder(BorderFactory.createEtchedBorder());
