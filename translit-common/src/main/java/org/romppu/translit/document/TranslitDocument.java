@@ -30,6 +30,7 @@ public abstract class TranslitDocument {
      * @throws TranslitDocumentException
      */
     public abstract String getString(List<Element> elementList, TranslitDictionary.Side side) throws TranslitDocumentException;
+
     /**
      * Sets document content from the specified string. String will no be transliterated, but it will be recognized as
      * transliterated content.
@@ -38,6 +39,15 @@ public abstract class TranslitDocument {
      * @throws TranslitDocumentException
      */
     public abstract void setString(String string, TranslitDictionary.Side side) throws TranslitDocumentException;
+
+    /**
+     * Inserts the specified string into document at the specified index.
+     * @param index
+     * @param text
+     * @param side
+     * @throws TranslitDocumentException
+     */
+    public abstract void insertStringAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException;
 
     /**
      * Returns document content as string with exclusion markers

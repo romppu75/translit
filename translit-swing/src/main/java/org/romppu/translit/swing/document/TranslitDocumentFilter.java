@@ -32,23 +32,29 @@ public class TranslitDocumentFilter extends DocumentFilter {
     public void replace(DocumentFilter.FilterBypass fb, int offset, int length, String text, AttributeSet attrs)
             throws BadLocationException {
         try {
-            TranslitDictionary.Side side = isTranslitMode() ? TranslitDictionary.Side.RIGHT : TranslitDictionary.Side.LEFT;
-            TranslitDocument.Mutation mutation = translitDocument.insertAt(offset, text, side);
-            String newString = translitDocument.getString(mutation.newElements(), TranslitDictionary.Side.LEFT);
-            int correction = newString.length() - text.length();
-            int startPos = mutation.getOffset() - correction;
-            int len = correction + (offset - mutation.getOffset());
-            fb.replace(startPos, len, newString, attrs);
-            if (fb.getDocument() instanceof StyledDocument) {
-                resetAttributes(startPos, len, (StyledDocument) fb.getDocument());
+            if (isTranslitMode()) {
+                TranslitDocument.Mutation mutation = translitDocument.insertAt(offset, text, TranslitDictionary.Side.RIGHT);
+                String newString = translitDocument.getString(mutation.newElements(), TranslitDictionary.Side.LEFT);
+                int correction = newString.length() - text.length();
+                int startPos = mutation.getOffset() - correction;
+                int len = correction + (offset - mutation.getOffset());
+                fb.replace(startPos, len, newString, attrs);
+                if (fb.getDocument() instanceof StyledDocument) {
+                    resetAttributes(startPos, len + 1, (StyledDocument) fb.getDocument());
+                }
+            } else {
+                translitDocument.insertStringAt(offset, text, TranslitDictionary.Side.LEFT);
+                fb.replace(offset, length, text, attrs);
+                resetAttributes(offset, length == 0?1:length, (StyledDocument) fb.getDocument());
             }
         } catch (TranslitDocumentException e) {
+            e.printStackTrace();
             throw new BadLocationException(text, offset);
         }
     }
 
     public void resetAttributes(StyledDocument document) throws TranslitDocumentException {
-       resetAttributes(0, translitDocument.getSize() - 1, document);
+       resetAttributes(0, translitDocument.getSize(), document);
     }
 
     public void resetAttributes(int offset, int len, StyledDocument document) throws TranslitDocumentException {
@@ -56,7 +62,8 @@ public class TranslitDocumentFilter extends DocumentFilter {
         StyleConstants.setForeground(textAttrs, getTextForeground());
         SimpleAttributeSet translitAttrs = new SimpleAttributeSet();
         StyleConstants.setForeground(translitAttrs, getTranslitForeground());
-        for (int i = offset; i < offset + len + 1; i++) {
+        for (int i = offset; i < offset + len; i++) {
+            if (i >= translitDocument.getSize()) break;
             TranslitDocument.Element element = translitDocument.getElement(i);
             document.setCharacterAttributes(i, 1, element.isTransliteration()?translitAttrs:textAttrs, true);
         }

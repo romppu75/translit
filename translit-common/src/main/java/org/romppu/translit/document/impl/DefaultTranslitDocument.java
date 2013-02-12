@@ -160,6 +160,25 @@ public class DefaultTranslitDocument extends TranslitDocument {
         }
     }
 
+    @Override
+    public void insertStringAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
+        for (int i = index; i < index + text.length(); i++) {
+            String str = String.valueOf(text.charAt(index - i));
+            if (dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.START).equals(str)) {
+                elements.add(i, new ExclusionMarkerElement(TranslitDictionary.ExclusionMarker.START));
+            } if (dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.END).equals(str)) {
+                elements.add(i, new ExclusionMarkerElement(TranslitDictionary.ExclusionMarker.END));
+            } else {
+                int idx = dictionary.indexOf(str, side);
+                if (idx != -1) {
+                    elements.add(i, new IndexElement(idx));
+                } else {
+                    elements.add(i, new CharacterElement(str));
+                }
+            }
+        }
+    }
+
     /**
      * Returns document content as string with exclusion markers.
      * @param side text will be transliterated from the specified side into an opposite side
@@ -357,7 +376,12 @@ public class DefaultTranslitDocument extends TranslitDocument {
                 } else if (data.equals(dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.END))) {
                     context.elements().add(new ExclusionMarkerElement(TranslitDictionary.ExclusionMarker.END));
                 } else {
-                    context.elements().add(new CharacterElement(data));
+                    int idx = dictionary.indexOf(data, side.invert());
+                    if (idx > -1) {
+                        context.elements().add(new IndexElement(idx));
+                    } else {
+                        context.elements().add(new CharacterElement(data));
+                    }
                 }
                 context.setPosition(context.getPosition() + 1);
             }
