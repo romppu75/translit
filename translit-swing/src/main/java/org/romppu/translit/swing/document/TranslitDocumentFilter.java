@@ -45,7 +45,7 @@ public class TranslitDocumentFilter extends DocumentFilter {
             } else {
                 translitDocument.insertStringAt(offset, text, TranslitDictionary.Side.LEFT);
                 fb.replace(offset, length, text, attrs);
-                resetAttributes(offset, length == 0?1:length, (StyledDocument) fb.getDocument());
+                resetAttributes(offset, length, (StyledDocument) fb.getDocument());
             }
         } catch (TranslitDocumentException e) {
             e.printStackTrace();

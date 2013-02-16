@@ -79,8 +79,6 @@ public class Transliterator extends JFrame {
 
             }
         });
-
-
     }
 
     public static int getRow(int pos, JTextComponent editor) {

@@ -163,7 +163,7 @@ public class DefaultTranslitDocument extends TranslitDocument {
     @Override
     public void insertStringAt(int index, String text, TranslitDictionary.Side side) throws TranslitDocumentException {
         for (int i = index; i < index + text.length(); i++) {
-            String str = String.valueOf(text.charAt(index - i));
+            String str = String.valueOf(text.charAt(i - index));
             if (dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.START).equals(str)) {
                 elements.add(i, new ExclusionMarkerElement(TranslitDictionary.ExclusionMarker.START));
             } if (dictionary.getExclusionMarker(TranslitDictionary.ExclusionMarker.END).equals(str)) {
