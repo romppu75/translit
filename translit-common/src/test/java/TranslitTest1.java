@@ -4,11 +4,7 @@ import org.romppu.translit.document.TranslitDocument;
 import org.romppu.translit.document.TranslitDocumentFactory;
 
 /**
- * Created with IntelliJ IDEA.
- * User: roman
- * Date: 16.2.2013
- * Time: 7:53
- * To change this template use File | Settings | File Templates.
+ * @author RP
  */
 public class TranslitTest1 {
 

@@ -40,12 +40,12 @@ public class TranslitDocumentFilter extends DocumentFilter {
                 int len = correction + (offset - mutation.getOffset());
                 fb.replace(startPos, len, newString, attrs);
                 if (fb.getDocument() instanceof StyledDocument) {
-                    resetAttributes(startPos, len + 1, (StyledDocument) fb.getDocument());
+                    resetAttributes(startPos, len, (StyledDocument) fb.getDocument());
                 }
             } else {
                 translitDocument.insertStringAt(offset, text, TranslitDictionary.Side.LEFT);
                 fb.replace(offset, length, text, attrs);
-                resetAttributes(offset, length, (StyledDocument) fb.getDocument());
+                resetAttributes(offset, text.length(), (StyledDocument) fb.getDocument());
             }
         } catch (TranslitDocumentException e) {
             e.printStackTrace();
@@ -58,11 +58,12 @@ public class TranslitDocumentFilter extends DocumentFilter {
     }
 
     public void resetAttributes(int offset, int len, StyledDocument document) throws TranslitDocumentException {
+        System.out.println("reset attrs in range " + offset + " + " + (offset + len));
         SimpleAttributeSet textAttrs = new SimpleAttributeSet();
         StyleConstants.setForeground(textAttrs, getTextForeground());
         SimpleAttributeSet translitAttrs = new SimpleAttributeSet();
         StyleConstants.setForeground(translitAttrs, getTranslitForeground());
-        for (int i = offset; i < offset + len; i++) {
+        for (int i = offset; i < offset + len + 1; i++) {
             if (i >= translitDocument.getSize()) break;
             TranslitDocument.Element element = translitDocument.getElement(i);
             document.setCharacterAttributes(i, 1, element.isTransliteration()?translitAttrs:textAttrs, true);
