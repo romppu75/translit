@@ -194,6 +194,7 @@ public class XmlTranslitDictionary implements TranslitDictionary {
     public void save(OutputStream stream) throws Exception {
         JAXBContext jc = JAXBContext.newInstance(TranslitProfile.class.getPackage().getName());
         Marshaller m = jc.createMarshaller();
+        m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         m.marshal(translitProfile, new OutputStreamWriter(stream, Charset.forName("UTF8")));
     }
 
