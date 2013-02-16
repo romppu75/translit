@@ -58,7 +58,6 @@ public class TranslitDocumentFilter extends DocumentFilter {
     }
 
     public void resetAttributes(int offset, int len, StyledDocument document) throws TranslitDocumentException {
-        System.out.println("reset attrs in range " + offset + " + " + (offset + len));
         SimpleAttributeSet textAttrs = new SimpleAttributeSet();
         StyleConstants.setForeground(textAttrs, getTextForeground());
         SimpleAttributeSet translitAttrs = new SimpleAttributeSet();
