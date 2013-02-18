@@ -98,9 +98,9 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         ArrayList<String> toReturn = new ArrayList<String>();
         for (TranslitProfile.Pair pair : translitProfile.getPair()) {
             if (side == Side.LEFT && value.equals(pair.getLeft())) {
-                toReturn.add(value);
-            } else if (side == Side.RIGHT && value.equals(pair.getRight())) {
-                toReturn.add(value);
+                toReturn.add(pair.getRight());
+            } else if (side == Side.RIGHT && value.equals(pair.getLeft())) {
+                toReturn.add(pair.getLeft());
             }
         }
         return toReturn;
