@@ -127,6 +127,9 @@ public class XmlTranslitDictionary implements TranslitDictionary {
         return side == Side.LEFT ? pair.getLeft() : pair.getRight();
     }
 
+    public TranslitProfile.Pair getPairAt(int idx) {
+        return translitProfile.getPair().get(idx);
+    }
     /**
      * Returns number of pairs
      *
