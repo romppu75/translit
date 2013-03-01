@@ -19,6 +19,7 @@ public class TranslitDocumentFilter extends DocumentFilter {
     private boolean translitMode;
     private Color translitForeground = Color.black;
     private Color textForeground = Color.gray;
+    private String family = "Dialog";
 
     public TranslitDocumentFilter() {
     }
@@ -58,14 +59,13 @@ public class TranslitDocumentFilter extends DocumentFilter {
     }
 
     public void resetAttributes(int offset, int len, StyledDocument document) throws TranslitDocumentException {
-        SimpleAttributeSet textAttrs = new SimpleAttributeSet();
-        StyleConstants.setForeground(textAttrs, getTextForeground());
-        SimpleAttributeSet translitAttrs = new SimpleAttributeSet();
-        StyleConstants.setForeground(translitAttrs, getTranslitForeground());
         for (int i = offset; i < offset + len + 1; i++) {
             if (i >= translitDocument.getSize()) break;
             TranslitDocument.Element element = translitDocument.getElement(i);
-            document.setCharacterAttributes(i, 1, element.isTransliteration()?translitAttrs:textAttrs, true);
+            MutableAttributeSet attributeSet = (MutableAttributeSet) document.getCharacterElement(i).getAttributes();
+            StyleConstants.setFontFamily(attributeSet, getFamily());
+            StyleConstants.setForeground(attributeSet,
+                    element.isTransliteration() ? getTranslitForeground() : getTextForeground());
         }
     }
 
@@ -124,4 +124,11 @@ public class TranslitDocumentFilter extends DocumentFilter {
         changeSupport.removePropertyChangeListener(prop, listener);
     }
 
+    public String getFamily() {
+        return family;
+    }
+
+    public void setFamily(String family) {
+        this.family = family;
+    }
 }
